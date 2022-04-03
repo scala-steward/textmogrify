@@ -42,8 +42,8 @@ sealed abstract case class AnalyzerPipe[F[_]](readerF: Reader => Resource[F, Tok
       readerF(new InputStreamReader(in))
     }
 
-  /** Emits a string for every token, as determined by the Analyzer, in the input stream. Decoding
-    * from bytes to strings is done using the {@link Charset#defaultCharset() default charset}.
+  /** Emits a string for every token, as determined by the Analyzer, in the input stream.
+    * Decoding from bytes to strings is done using the default charset.
     *
     * @param in
     *   input stream to tokenize
