@@ -15,6 +15,9 @@ ThisBuild / tlSonatypeUseLegacyHost := false
 // publish website from this branch
 ThisBuild / tlSitePublishBranch := Some("main")
 
+// use JDK 11
+ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
+
 val Scala213 = "2.13.8"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.1.1")
 ThisBuild / scalaVersion := Scala213 // the default Scala
