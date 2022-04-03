@@ -57,4 +57,16 @@ lazy val lucene = project
     ),
   )
 
-lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)
+import laika.helium.Helium
+
+lazy val docs = project
+  .in(file("site"))
+  .enablePlugins(TypelevelSitePlugin, LaikaPlugin)
+  .settings(
+    laikaTheme := Helium.defaults
+      .all.metadata(
+        title = Some("textmogrify"),
+        language = Some("en"),
+      )
+      .build
+  )
