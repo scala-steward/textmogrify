@@ -45,4 +45,13 @@ object Analyzers {
       }
     }
 
+  def asciiFolderWithLower(): Analyzer =
+    new Analyzer {
+      protected def createComponents(fieldName: String): TokenStreamComponents = {
+        val source = new StandardTokenizer()
+        val tokens = new LowerCaseFilter(source)
+        new TokenStreamComponents(source, new ASCIIFoldingFilter(tokens))
+      }
+    }
+
 }

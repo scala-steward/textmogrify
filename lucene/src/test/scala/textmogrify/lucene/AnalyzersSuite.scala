@@ -30,4 +30,12 @@ class AnalyzersSuite extends CatsEffectSuite {
     assertIO(actual, Vector("I", "like", "jalapenos"))
   }
 
+  test("asciiFolderLower should fold and lowercase") {
+    val tokenizer = AnalyzerResource.tokenizer[IO](Analyzers.asciiFolderWithLower())
+    val actual = tokenizer.use { f =>
+      f("I Like Jalapeños")
+    }
+    assertIO(actual, Vector("i", "like", "jalapenos"))
+  }
+
 }
