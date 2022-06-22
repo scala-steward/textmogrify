@@ -61,4 +61,13 @@ lazy val lucene = project
     ),
   )
 
-lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)
+lazy val docs = project
+  .in(file("site"))
+  .enablePlugins(TypelevelSitePlugin)
+  .settings(
+    tlSiteRelatedProjects := Seq(
+      "lucene" -> url("https://lucene.apache.org/"),
+      TypelevelProject.CatsEffect,
+      TypelevelProject.Fs2,
+    )
+  )
