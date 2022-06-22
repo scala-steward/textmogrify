@@ -3,6 +3,7 @@ ThisBuild / tlBaseVersion := "0.0" // your current series x.y
 
 ThisBuild / organization := "io.pig"
 ThisBuild / organizationName := "Pig.io"
+ThisBuild / startYear := Some(2022)
 ThisBuild / licenses := Seq(License.Apache2)
 ThisBuild / developers := List(
   // your GitHub handle and name
@@ -60,4 +61,13 @@ lazy val lucene = project
     ),
   )
 
-lazy val docs = project.in(file("site")).enablePlugins(TypelevelSitePlugin)
+lazy val docs = project
+  .in(file("site"))
+  .enablePlugins(TypelevelSitePlugin)
+  .settings(
+    tlSiteRelatedProjects := Seq(
+      "lucene" -> url("https://lucene.apache.org/"),
+      TypelevelProject.CatsEffect,
+      TypelevelProject.Fs2,
+    )
+  )
