@@ -17,11 +17,8 @@
 package textmogrify
 package lucene
 
-import cats.effect._
-import java.io.StringReader
-import scala.collection.mutable.ArrayBuffer
+import cats.effect.kernel.{Resource, Sync}
 import org.apache.lucene.analysis.Analyzer
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute
 
 object AnalyzerResource {
 
@@ -34,19 +31,5 @@ object AnalyzerResource {
       analyzer: => Analyzer
   )(implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
     fromAnalyzer(analyzer)
-      .map { analyzer => (s: String) =>
-        F.delay {
-          val ts = analyzer.tokenStream("textmogrify-field", new StringReader(s))
-          val termAtt = ts.addAttribute(classOf[CharTermAttribute])
-          val arr = new ArrayBuffer[String].empty
-          try {
-            ts.reset()
-            while (ts.incrementToken())
-              arr.append(termAtt.toString())
-            ts.end()
-          } finally
-            ts.close()
-          arr.toVector
-        }
-      }
+      .map(a => Tokenizer.vectorTokenizer(a))
 }

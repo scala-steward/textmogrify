@@ -18,12 +18,13 @@ package textmogrify
 package lucene
 
 import munit.CatsEffectSuite
-import cats.effect._
+import cats.effect.IO
 
 class CommonAnalyzersSuite extends CatsEffectSuite {
 
   test("asciiFolder should fold") {
-    val tokenizer = AnalyzerResource.tokenizer[IO](CommonAnalyzers.asciiFolder())
+    val an = CommonAnalyzers.asciiFolder[IO]
+    val tokenizer = an.map(a => Tokenizer.vectorTokenizer[IO](a))
     val actual = tokenizer.use { f =>
       f("I like jalapeños")
     }

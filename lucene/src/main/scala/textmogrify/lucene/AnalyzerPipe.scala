@@ -109,10 +109,9 @@ sealed abstract case class AnalyzerPipe[F[_]](readerF: Reader => Resource[F, Tok
 }
 object AnalyzerPipe {
 
-  def fromAnalyzer[F[_]](analyzer: => Analyzer)(implicit F: Async[F]): AnalyzerPipe[F] =
+  def fromResource[F[_]](analyzerR: Resource[F, Analyzer])(implicit F: Async[F]): AnalyzerPipe[F] =
     new AnalyzerPipe[F](reader =>
-      AnalyzerResource
-        .fromAnalyzer(analyzer)
+      analyzerR
         .evalMap { analyzer =>
           val ts = analyzer.tokenStream("textmogrify-field", reader)
           val termAtt = ts.addAttribute(classOf[CharTermAttribute])

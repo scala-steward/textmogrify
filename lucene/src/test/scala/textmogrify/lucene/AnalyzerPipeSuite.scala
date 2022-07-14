@@ -20,58 +20,49 @@ package lucene
 import fs2.{Stream, Chunk}
 import munit.CatsEffectSuite
 import cats.effect._
-import org.apache.lucene.analysis.en.EnglishAnalyzer
 
 class AnalyzerPipeSuite extends CatsEffectSuite {
 
   def input = Stream("Hello my name is Neeko,", "I enjoy jumping on counters.")
 
   test("fromAnalyzer should accept basic Analyzer") {
-    val analyzer = AnalyzerPipe.fromAnalyzer[IO](new EnglishAnalyzer())
+    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.default.build)
     val actual = analyzer.tokenizeStrings(input, 1).take(1).compile.toList
-    assertIO(actual, List("hello"))
+    assertIO(actual, List("Hello"))
   }
 
   test("tokenizeStrings should chunk on tokenN") {
-    val analyzer = AnalyzerPipe.fromAnalyzer[IO](new EnglishAnalyzer())
+    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.default.build)
     val actual = analyzer.tokenizeStrings(input, 3).take(6).chunks.compile.toVector
-    assertIO(actual, Vector(Chunk("hello", "my", "name"), Chunk("neeko", "i", "enjoi")))
-  }
-
-  test("tokenizeStrings works with custom Analyzers") {
-    import org.apache.lucene.analysis.Analyzer.TokenStreamComponents
-    import org.apache.lucene.analysis.standard.StandardTokenizer
-    import org.apache.lucene.analysis.en.PorterStemFilter
-    import org.apache.lucene.analysis.LowerCaseFilter
-    import org.apache.lucene.analysis.Analyzer
-
-    val stemmer = AnalyzerPipe.fromAnalyzer[IO](new Analyzer {
-      protected def createComponents(fieldName: String): TokenStreamComponents = {
-        val source = new StandardTokenizer()
-        val tokens = new LowerCaseFilter(source)
-        new TokenStreamComponents(source, new PorterStemFilter(tokens))
-      }
-    })
-    val actual = stemmer.tokenizeStrings(input, 3).take(10).compile.toVector
-    assertIO(
-      actual,
-      Vector("hello", "my", "name", "is", "neeko", "i", "enjoi", "jump", "on", "counter"),
-    )
+    assertIO(actual, Vector(Chunk("Hello", "my", "name"), Chunk("is", "Neeko", "I")))
   }
 
   test("tokenizeStrings works on infinite input streams") {
-    val analyzer = AnalyzerPipe.fromAnalyzer[IO](new EnglishAnalyzer())
+    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.default.build)
     val infInput = input.repeat
-    val actual = analyzer.tokenizeStrings(infInput, 50).take(10).compile.toVector
+    val actual = analyzer.tokenizeStrings(infInput, 50).take(12).compile.toVector
     assertIO(
       actual,
-      Vector("hello", "my", "name", "neeko", "i", "enjoi", "jump", "counter", "hello", "my"),
+      Vector(
+        "Hello",
+        "my",
+        "name",
+        "is",
+        "Neeko",
+        "I",
+        "enjoy",
+        "jumping",
+        "on",
+        "counters",
+        "Hello",
+        "my",
+      ),
     )
   }
 
   test("tokenizeStringsRaw does not intersperse spaces between elements") {
     val input = Stream("combined", "word")
-    val analyzer = AnalyzerPipe.fromAnalyzer[IO](new EnglishAnalyzer())
+    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.default.build)
     val actual = analyzer.tokenizeStringsRaw(input, 10).take(1).compile.toVector
     assertIO(actual, Vector("combinedword"))
   }

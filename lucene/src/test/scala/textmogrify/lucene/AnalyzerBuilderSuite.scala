@@ -23,8 +23,7 @@ import cats.effect._
 class AnalyzerBuilderSuite extends CatsEffectSuite {
 
   test("analyzer with stopWords should filter them out") {
-    val analyzer = AnalyzerBuilder.default.withStopWords(Set("I")).build
-    val tokenizer = AnalyzerResource.tokenizer[IO](analyzer)
+    val tokenizer = AnalyzerBuilder.default.withStopWords(Set("I")).tokenizer[IO]
     val actual = tokenizer.use { f =>
       f("I Like Jalapeños")
     }

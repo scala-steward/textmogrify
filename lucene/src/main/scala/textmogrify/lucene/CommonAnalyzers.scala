@@ -16,17 +16,20 @@
 
 package textmogrify.lucene
 
+import cats.effect.kernel.Resource
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.en.EnglishAnalyzer
+import cats.effect.kernel.Sync
 
 object CommonAnalyzers {
 
-  def englishStandard(): Analyzer = new EnglishAnalyzer()
+  def englishStandard[F[_]: Sync]: Resource[F, Analyzer] =
+    AnalyzerResource.fromAnalyzer(new EnglishAnalyzer())
 
-  def porterStemmer(): Analyzer =
+  def porterStemmer[F[_]: Sync]: Resource[F, Analyzer] =
     AnalyzerBuilder.default.withLowerCasing.withPorterStemmer.build
 
-  def asciiFolder(): Analyzer =
+  def asciiFolder[F[_]: Sync]: Resource[F, Analyzer] =
     AnalyzerBuilder.default.withASCIIFolding.build
 
 }
