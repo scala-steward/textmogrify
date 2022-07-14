@@ -21,25 +21,9 @@ import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.apache.lucene.analysis.en.PorterStemFilter
 import org.apache.lucene.analysis.LowerCaseFilter
 import org.apache.lucene.analysis.Analyzer
-import org.apache.lucene.analysis.en.EnglishAnalyzer
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter
 import org.apache.lucene.analysis.CharArraySet
 import org.apache.lucene.analysis.StopFilter
-
-object Analyzers {
-
-  def englishStandard(): Analyzer = new EnglishAnalyzer()
-
-  def porterStemmer(): Analyzer =
-    AnalyzerBuilder.default.withLowerCasing.withPorterStemmer.build
-
-  def asciiFolder(): Analyzer =
-    AnalyzerBuilder.default.withASCIIFolding.build
-
-  def asciiFolderWithLower(): Analyzer =
-    AnalyzerBuilder.default.withLowerCasing.withASCIIFolding.build
-
-}
 
 final class AnalyzerBuilder private (
     val lowerCase: Boolean,
