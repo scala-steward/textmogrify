@@ -17,19 +17,18 @@
 package textmogrify
 package lucene
 
-import cats.effect.kernel.{Resource, Sync}
-import org.apache.lucene.analysis.Analyzer
+import munit.CatsEffectSuite
+import cats.effect.IO
 
-object AnalyzerResource {
+class CommonAnalyzersSuite extends CatsEffectSuite {
 
-  /** Wrap an Analyzer in a Resource
-    */
-  def fromAnalyzer[F[_]](analyzer: => Analyzer)(implicit F: Sync[F]): Resource[F, Analyzer] =
-    Resource.make(F.delay(analyzer))(analyzer => F.delay(analyzer.close()))
+  test("asciiFolder should fold") {
+    val an = CommonAnalyzers.asciiFolder[IO]
+    val tokenizer = an.map(a => Tokenizer.vectorTokenizer[IO](a))
+    val actual = tokenizer.use { f =>
+      f("I like jalapeños")
+    }
+    assertIO(actual, Vector("I", "like", "jalapenos"))
+  }
 
-  def tokenizer[F[_]](
-      analyzer: => Analyzer
-  )(implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
-    fromAnalyzer(analyzer)
-      .map(a => Tokenizer.vectorTokenizer(a))
 }

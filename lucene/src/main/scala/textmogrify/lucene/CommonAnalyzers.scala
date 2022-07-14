@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package textmogrify
-package lucene
+package textmogrify.lucene
 
-import cats.effect.kernel.{Resource, Sync}
+import cats.effect.kernel.Resource
 import org.apache.lucene.analysis.Analyzer
+import org.apache.lucene.analysis.en.EnglishAnalyzer
+import cats.effect.kernel.Sync
 
-object AnalyzerResource {
+object CommonAnalyzers {
 
-  /** Wrap an Analyzer in a Resource
-    */
-  def fromAnalyzer[F[_]](analyzer: => Analyzer)(implicit F: Sync[F]): Resource[F, Analyzer] =
-    Resource.make(F.delay(analyzer))(analyzer => F.delay(analyzer.close()))
+  def englishStandard[F[_]: Sync]: Resource[F, Analyzer] =
+    AnalyzerResource.fromAnalyzer(new EnglishAnalyzer())
 
-  def tokenizer[F[_]](
-      analyzer: => Analyzer
-  )(implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
-    fromAnalyzer(analyzer)
-      .map(a => Tokenizer.vectorTokenizer(a))
+  def porterStemmer[F[_]: Sync]: Resource[F, Analyzer] =
+    AnalyzerBuilder.default.withLowerCasing.withPorterStemmer.build
+
+  def asciiFolder[F[_]: Sync]: Resource[F, Analyzer] =
+    AnalyzerBuilder.default.withASCIIFolding.build
+
 }

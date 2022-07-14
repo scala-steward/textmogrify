@@ -20,22 +20,14 @@ package lucene
 import munit.CatsEffectSuite
 import cats.effect._
 
-class AnalyzersSuite extends CatsEffectSuite {
+class AnalyzerBuilderSuite extends CatsEffectSuite {
 
-  test("asciiFolder should fold") {
-    val tokenizer = AnalyzerResource.tokenizer[IO](Analyzers.asciiFolder())
-    val actual = tokenizer.use { f =>
-      f("I like jalapeños")
-    }
-    assertIO(actual, Vector("I", "like", "jalapenos"))
-  }
-
-  test("asciiFolderLower should fold and lowercase") {
-    val tokenizer = AnalyzerResource.tokenizer[IO](Analyzers.asciiFolderWithLower())
+  test("analyzer with stopWords should filter them out") {
+    val tokenizer = AnalyzerBuilder.default.withStopWords(Set("I")).tokenizer[IO]
     val actual = tokenizer.use { f =>
       f("I Like Jalapeños")
     }
-    assertIO(actual, Vector("i", "like", "jalapenos"))
+    assertIO(actual, Vector("Like", "Jalapeños"))
   }
 
 }
