@@ -29,29 +29,64 @@ object Analyzers {
   def englishStandard(): Analyzer = new EnglishAnalyzer()
 
   def porterStemmer(): Analyzer =
-    new Analyzer {
-      protected def createComponents(fieldName: String): TokenStreamComponents = {
-        val source = new StandardTokenizer()
-        val tokens = new LowerCaseFilter(source)
-        new TokenStreamComponents(source, new PorterStemFilter(tokens))
-      }
-    }
+    AnalyzerBuilder.default.withLowerCasing.withPorterStemmer.build
 
   def asciiFolder(): Analyzer =
-    new Analyzer {
-      protected def createComponents(fieldName: String): TokenStreamComponents = {
-        val source = new StandardTokenizer()
-        new TokenStreamComponents(source, new ASCIIFoldingFilter(source))
-      }
-    }
+    AnalyzerBuilder.default.withASCIIFolding.build
 
   def asciiFolderWithLower(): Analyzer =
+    AnalyzerBuilder.default.withLowerCasing.withASCIIFolding.build
+
+}
+
+final class AnalyzerBuilder private (
+    val lowerCase: Boolean,
+    val foldASCII: Boolean,
+    val stopWords: Set[String],
+    val stemmer: Boolean,
+) { self =>
+
+  private def copy(
+      lowerCase: Boolean = self.lowerCase,
+      foldASCII: Boolean = self.foldASCII,
+      stemmer: Boolean = self.stemmer,
+      stopWords: Set[String] = self.stopWords,
+  ): AnalyzerBuilder =
+    new AnalyzerBuilder(
+      lowerCase = lowerCase,
+      foldASCII = foldASCII,
+      stemmer = stemmer,
+      stopWords = stopWords,
+    )
+
+  def withLowerCasing: AnalyzerBuilder =
+    copy(lowerCase = true)
+
+  def withASCIIFolding: AnalyzerBuilder =
+    copy(foldASCII = true)
+
+  def withPorterStemmer: AnalyzerBuilder =
+    copy(stemmer = true)
+
+  def withStopWords(words: Set[String]): AnalyzerBuilder =
+    copy(stopWords = words)
+
+  def build: Analyzer =
     new Analyzer {
       protected def createComponents(fieldName: String): TokenStreamComponents = {
         val source = new StandardTokenizer()
-        val tokens = new LowerCaseFilter(source)
-        new TokenStreamComponents(source, new ASCIIFoldingFilter(tokens))
+        var tokens = if (self.lowerCase) new LowerCaseFilter(source) else source
+        tokens = if (self.foldASCII) new ASCIIFoldingFilter(tokens) else tokens
+        tokens = if (self.stemmer) new PorterStemFilter(tokens) else tokens
+        new TokenStreamComponents(source, tokens)
       }
     }
-
+}
+object AnalyzerBuilder {
+  def default: AnalyzerBuilder = new AnalyzerBuilder(
+    lowerCase = false,
+    foldASCII = false,
+    stemmer = false,
+    stopWords = Set.empty,
+  )
 }
