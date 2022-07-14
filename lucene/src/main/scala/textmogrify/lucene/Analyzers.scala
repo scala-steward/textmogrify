@@ -23,6 +23,8 @@ import org.apache.lucene.analysis.LowerCaseFilter
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.en.EnglishAnalyzer
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter
+import org.apache.lucene.analysis.CharArraySet
+import org.apache.lucene.analysis.StopFilter
 
 object Analyzers {
 
@@ -77,6 +79,13 @@ final class AnalyzerBuilder private (
         val source = new StandardTokenizer()
         var tokens = if (self.lowerCase) new LowerCaseFilter(source) else source
         tokens = if (self.foldASCII) new ASCIIFoldingFilter(tokens) else tokens
+        tokens =
+          if (self.stopWords.isEmpty) tokens
+          else {
+            val stopSet = new CharArraySet(self.stopWords.size, true)
+            stopWords.foreach(w => stopSet.add(w))
+            new StopFilter(tokens, stopSet)
+          }
         tokens = if (self.stemmer) new PorterStemFilter(tokens) else tokens
         new TokenStreamComponents(source, tokens)
       }

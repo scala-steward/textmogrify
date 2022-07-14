@@ -38,4 +38,13 @@ class AnalyzersSuite extends CatsEffectSuite {
     assertIO(actual, Vector("i", "like", "jalapenos"))
   }
 
+  test("analyzer with stopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.default.withStopWords(Set("I")).build
+    val tokenizer = AnalyzerResource.tokenizer[IO](analyzer)
+    val actual = tokenizer.use { f =>
+      f("I Like Jalapeños")
+    }
+    assertIO(actual, Vector("Like", "Jalapeños"))
+  }
+
 }
