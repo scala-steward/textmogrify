@@ -27,6 +27,28 @@ libraryDependencies ++= Seq(
 The Lucene module lets you use a Lucene [`Analyzer`][analyzer] to modify text, additionally it provides helpers to use `Analyzer`s with an fs2 [`Stream`][stream].
 
 
+Typical usage is to use the `AnalyzerBuilder` to configure an `Analyzer` and call `.tokenizer` to get a `Resource[F, String => F[Vector[String]]]`:
+
+```scala mdoc:silent
+import textmogrify.lucene.AnalyzerBuilder
+import cats.effect.IO
+
+val tokenizer = AnalyzerBuilder.default.withLowerCasing.withASCIIFolding.tokenizer[IO]
+
+val tokens: IO[Vector[String]] = tokenizer.use(
+  f => f("I Like Jalapeños")
+)
+```
+
+Because this documentation is running in mdoc, we'll import an IO runtime and run explicitly:
+
+```scala mdoc
+import cats.effect.unsafe.implicits.global
+
+tokens.unsafeRunSync()
+```
+
+
 [analyzer]: https://lucene.apache.org/core/9_3_0/core/org/apache/lucene/analysis/Analyzer.html
 [fs2]: https://fs2.io
 [lucene]: https://lucene.apache.org/

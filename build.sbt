@@ -69,6 +69,7 @@ lazy val example = project
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
+  .dependsOn(core.jvm, lucene)
   .settings(
     tlSiteRelatedProjects := Seq(
       "lucene" -> url("https://lucene.apache.org/"),
