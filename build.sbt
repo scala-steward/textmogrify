@@ -32,19 +32,7 @@ val fs2V = "3.2.11"
 val munitCatsEffectV = "1.0.7"
 val luceneV = "9.3.0"
 
-lazy val root = tlCrossRootProject.aggregate(core, lucene, example)
-
-lazy val core = crossProject(JVMPlatform, JSPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("core"))
-  .settings(
-    name := "textmogrify",
-    libraryDependencies ++= Seq(
-      "org.typelevel" %%% "cats-core" % catsV,
-      "org.typelevel" %%% "cats-effect" % catsEffectV,
-      "org.typelevel" %%% "munit-cats-effect-3" % munitCatsEffectV % Test,
-    ),
-  )
+lazy val root = tlCrossRootProject.aggregate(lucene, example)
 
 lazy val lucene = project
   .in(file("lucene"))
@@ -64,12 +52,12 @@ lazy val lucene = project
 lazy val example = project
   .in(file("example"))
   .enablePlugins(NoPublishPlugin)
-  .dependsOn(core.jvm, lucene)
+  .dependsOn(lucene)
 
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
-  .dependsOn(core.jvm, lucene)
+  .dependsOn(lucene)
   .settings(
     tlSiteRelatedProjects := Seq(
       "lucene" -> url("https://lucene.apache.org/"),
