@@ -32,7 +32,7 @@ val fs2V = "3.2.11"
 val munitCatsEffectV = "1.0.7"
 val luceneV = "9.3.0"
 
-lazy val root = tlCrossRootProject.aggregate(core, lucene)
+lazy val root = tlCrossRootProject.aggregate(core, lucene, example)
 
 lazy val core = crossProject(JVMPlatform, JSPlatform)
   .crossType(CrossType.Pure)
@@ -61,9 +61,15 @@ lazy val lucene = project
     ),
   )
 
+lazy val example = project
+  .in(file("example"))
+  .enablePlugins(NoPublishPlugin)
+  .dependsOn(core.jvm, lucene)
+
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
+  .dependsOn(core.jvm, lucene)
   .settings(
     tlSiteRelatedProjects := Seq(
       "lucene" -> url("https://lucene.apache.org/"),
