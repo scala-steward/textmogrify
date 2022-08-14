@@ -40,7 +40,7 @@
         
       </div>
 
-      <a class="image-link" href="https://typelevel.org"><img src="https://typelevel.org/img/logo.svg"></a>
+      <a class="icon-link" href="index.html"><i class="icofont-laika" title="Home"></i></a>
 
       <span class="row links"><a class="icon-link svg-link" href="https://github.com/valencik/textmogrify"><span title="Source Code"><svg class="svg-icon" width="100%" height="100%" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
   <g class="svg-shape">
@@ -84,6 +84,9 @@
 
         <ul class="nav-list">
           <li class="level1"><a href="#usage">Usage</a></li>
+          <li class="level1"><a href="#lucene">Lucene</a></li>
+          <li class="level2"><a href="#basics">Basics</a></li>
+          <li class="level2"><a href="#pipelines">Pipelines</a></li>
         </ul>
 
         <p class="footer"></p>
@@ -92,17 +95,77 @@
       <main class="content">
 
         <h1 id="textmogrify" class="title">textmogrify</h1>
+        <p>Textmogrify is a pre-alpha text manipulation library that hopefully works well with <a href="https://fs2.io">fs2</a>.</p>
         
-        <h3 id="usage" class="section">Usage<a class="anchor-link right" href="#usage"><i class="icofont-laika">&#xef71;</i></a></h3>
+        <h2 id="usage" class="section">Usage<a class="anchor-link right" href="#usage"><i class="icofont-laika">&#xef71;</i></a></h2>
         <p>This library is currently available for Scala binary versions 2.13 and 3.1.</p>
         <p>To use the latest version, include the following in your <code>build.sbt</code>:</p>
         <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
-  </span><span class="string-literal">&quot;io.pig&quot;</span><span> %% </span><span class="string-literal">&quot;textmogrify&quot;</span><span> % </span><span class="string-literal">&quot;0.0-8cc0fcf-SNAPSHOT&quot;</span><span>
+  </span><span class="string-literal">&quot;io.pig&quot;</span><span> %% </span><span class="string-literal">&quot;textmogrify&quot;</span><span> % </span><span class="string-literal">&quot;0.0-620151d-SNAPSHOT&quot;</span><span>
 )</span></code></pre>
+        
+        <h2 id="lucene" class="section">Lucene<a class="anchor-link right" href="#lucene"><i class="icofont-laika">&#xef71;</i></a></h2>
+        <p>Currently the core functionality of textmogrify is implemented with <a href="https://lucene.apache.org/">Lucene</a> via the Lucene module.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">libraryDependencies</span><span> ++= </span><span class="type-name">Seq</span><span>(
+  </span><span class="string-literal">&quot;io.pig&quot;</span><span> %% </span><span class="string-literal">&quot;textmogrify-lucene&quot;</span><span> % </span><span class="string-literal">&quot;0.0-620151d-SNAPSHOT&quot;</span><span>
+)</span></code></pre>
+        <p>The Lucene module lets you use a Lucene <a href="https://lucene.apache.org/core/9_3_0/core/org/apache/lucene/analysis/Analyzer.html">Analyzer</a> to modify text, additionally it provides helpers to use <code>Analyzer</code>s with an fs2 <a href="https://www.javadoc.io/doc/co.fs2/fs2-docs_2.13/latest/fs2/Stream.html">Stream</a>.</p>
+        
+        <h3 id="basics" class="section">Basics<a class="anchor-link right" href="#basics"><i class="icofont-laika">&#xef71;</i></a></h3>
+        <p>Typical usage is to use the <code>AnalyzerBuilder</code> to configure an <code>Analyzer</code> and call <code>.tokenizer</code> to get a <code>Resource[F, String =&gt; F[Vector[String]]]</code>:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">textmogrify</span><span>.</span><span class="identifier">lucene</span><span>.</span><span class="type-name">AnalyzerBuilder</span><span>
+</span><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="type-name">IO</span><span>
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">tokenizer</span><span> = </span><span class="type-name">AnalyzerBuilder</span><span>.</span><span class="keyword">default</span><span>.</span><span class="identifier">withLowerCasing</span><span>.</span><span class="identifier">withASCIIFolding</span><span>.</span><span class="identifier">tokenizer</span><span>[</span><span class="type-name">IO</span><span>]
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">tokens</span><span>: </span><span class="type-name">IO</span><span>[</span><span class="type-name">Vector</span><span>[</span><span class="type-name">String</span><span>]] = </span><span class="identifier">tokenizer</span><span>.</span><span class="identifier">use</span><span>(
+  </span><span class="identifier">f</span><span> =&gt; </span><span class="identifier">f</span><span>(</span><span class="string-literal">&quot;I Like Jalapeños&quot;</span><span>)
+)</span></code></pre>
+        <p>Because this documentation is running in mdoc, we&#39;ll import an IO runtime and run explicitly:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">cats</span><span>.</span><span class="identifier">effect</span><span>.</span><span class="identifier">unsafe</span><span>.</span><span class="identifier">implicits</span><span>.</span><span class="identifier">global</span><span>
+
+</span><span class="identifier">tokens</span><span>.</span><span class="identifier">unsafeRunSync</span><span>()
+</span><span class="comment">// res0: Vector[String] = Vector(&quot;i&quot;, &quot;like&quot;, &quot;jalapenos&quot;)</span></code></pre>
+        <p>We can see that our text was lowercased and the unicode <code>ñ</code> replaced with an ASCII <code>n</code>.</p>
+        
+        <h3 id="pipelines" class="section">Pipelines<a class="anchor-link right" href="#pipelines"><i class="icofont-laika">&#xef71;</i></a></h3>
+        <p>Another common use is to construct a <code>Pipe</code>, or <code>Stream</code> to <code>Stream</code> function.
+        Let&#39;s say we have some messages we want to analyze and index as part of some search component.
+        Given a raw <code>Msg</code> type and an analyzed <code>Doc</code> type, we want to transform a <code>Stream[F, Msg]</code> into a <code>Stream[F, Doc]</code>.</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">fs2</span><span>.</span><span class="type-name">Stream</span><span>
+
+</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Msg</span><span>(</span><span class="identifier">id</span><span>: </span><span class="type-name">Int</span><span>, </span><span class="identifier">msg</span><span>: </span><span class="type-name">String</span><span>)
+</span><span class="keyword">case</span><span> </span><span class="keyword">class</span><span> </span><span class="type-name">Doc</span><span>(</span><span class="identifier">id</span><span>: </span><span class="type-name">Int</span><span>, </span><span class="identifier">tokens</span><span>: </span><span class="type-name">Vector</span><span>[</span><span class="type-name">String</span><span>])
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">input</span><span> = </span><span class="type-name">Stream</span><span>(
+  </span><span class="type-name">Msg</span><span>(</span><span class="number-literal">0</span><span>, </span><span class="string-literal">&quot;How do i trim my cats nails?&quot;</span><span>),
+  </span><span class="type-name">Msg</span><span>(</span><span class="number-literal">1</span><span>, </span><span class="string-literal">&quot;trimming cat nail&quot;</span><span>),
+  </span><span class="type-name">Msg</span><span>(</span><span class="number-literal">2</span><span>, </span><span class="string-literal">&quot;cat scratching furniture&quot;</span><span>),
+)</span></code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">import</span><span> </span><span class="identifier">fs2</span><span>.</span><span class="type-name">Pipe</span><span>
+
+</span><span class="keyword">val</span><span> </span><span class="identifier">normalizeMsgs</span><span>: </span><span class="type-name">Pipe</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Msg</span><span>, </span><span class="type-name">Doc</span><span>] = </span><span class="identifier">msgs</span><span> =&gt; {
+  </span><span class="keyword">val</span><span> </span><span class="identifier">tokenizer</span><span> = </span><span class="type-name">AnalyzerBuilder</span><span>.</span><span class="keyword">default</span><span>
+    .</span><span class="identifier">withLowerCasing</span><span>
+    .</span><span class="identifier">withStopWords</span><span>(</span><span class="type-name">Set</span><span>(</span><span class="string-literal">&quot;how&quot;</span><span>, </span><span class="string-literal">&quot;do&quot;</span><span>, </span><span class="string-literal">&quot;i&quot;</span><span>, </span><span class="string-literal">&quot;my&quot;</span><span>))
+    .</span><span class="identifier">withPorterStemmer</span><span>
+    .</span><span class="identifier">tokenizer</span><span>[</span><span class="type-name">IO</span><span>]
+  </span><span class="type-name">Stream</span><span>.</span><span class="identifier">resource</span><span>(</span><span class="identifier">tokenizer</span><span>)
+    .</span><span class="identifier">flatMap</span><span>(</span><span class="identifier">f</span><span> =&gt; </span><span class="identifier">msgs</span><span>.</span><span class="identifier">evalMap</span><span>(</span><span class="identifier">m</span><span> =&gt; </span><span class="identifier">f</span><span>(</span><span class="identifier">m</span><span>.</span><span class="identifier">msg</span><span>).</span><span class="identifier">map</span><span>(</span><span class="identifier">ts</span><span> =&gt; </span><span class="type-name">Doc</span><span>(</span><span class="identifier">m</span><span>.</span><span class="identifier">id</span><span>, </span><span class="identifier">ts</span><span>))))
+}</span></code></pre>
+        <p>We can then run our stream of <code>Msg</code> through our tokenizer <code>Pipe</code> to get our <code>Doc</code>s:</p>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="keyword">val</span><span> </span><span class="identifier">docs</span><span>: </span><span class="type-name">Stream</span><span>[</span><span class="type-name">IO</span><span>, </span><span class="type-name">Doc</span><span>] = </span><span class="identifier">input</span><span>.</span><span class="identifier">through</span><span>(</span><span class="identifier">normalizeMsgs</span><span>)</span></code></pre>
+        <pre class="keep-together pdf epub"><code class="nohighlight"><span class="identifier">docs</span><span>.</span><span class="identifier">compile</span><span>.</span><span class="identifier">toList</span><span>.</span><span class="identifier">unsafeRunSync</span><span>()
+</span><span class="comment">// res1: List[Doc] = List(
+//   Doc(id = 0, tokens = Vector(&quot;trim&quot;, &quot;cat&quot;, &quot;nail&quot;)),
+//   Doc(id = 1, tokens = Vector(&quot;trim&quot;, &quot;cat&quot;, &quot;nail&quot;)),
+//   Doc(id = 2, tokens = Vector(&quot;cat&quot;, &quot;scratch&quot;, &quot;furnitur&quot;))
+// )</span></code></pre>
+        <p>Be careful not to construct the <code>tokenizer</code> within a loop, we want to create it once and reuse it throughout the <code>Pipe</code>.</p>
 
         <hr style="margin-top: 30px"/>
         <footer style="font-size: 90%; text-align: center">
-          textmogrify is a <a href="https://typelevel.org/">Typelevel</a> project distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> license.
+          textmogrify is distributed under the <a href="https://www.apache.org/licenses/LICENSE-2.0.txt">Apache-2.0</a> license.
         </footer>
 
       </main>
