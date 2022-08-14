@@ -32,7 +32,7 @@ val fs2V = "3.2.12"
 val munitCatsEffectV = "1.0.7"
 val luceneV = "9.3.0"
 
-lazy val root = tlCrossRootProject.aggregate(lucene, example)
+lazy val root = tlCrossRootProject.aggregate(lucene, example, unidocs)
 
 lazy val lucene = project
   .in(file("lucene"))
@@ -59,9 +59,18 @@ lazy val docs = project
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(lucene)
   .settings(
+    tlSiteApiPackage := Some("textmogrify"),
     tlSiteRelatedProjects := Seq(
       "lucene" -> url("https://lucene.apache.org/"),
       TypelevelProject.CatsEffect,
       TypelevelProject.Fs2,
-    )
+    ),
+  )
+
+lazy val unidocs = project
+  .in(file("unidocs"))
+  .enablePlugins(TypelevelUnidocPlugin)
+  .settings(
+    name := "textmogrify-docs",
+    ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(lucene),
   )
