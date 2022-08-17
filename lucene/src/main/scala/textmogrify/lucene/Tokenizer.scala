@@ -24,6 +24,9 @@ import org.apache.lucene.analysis.Analyzer
 
 object Tokenizer {
 
+  /** Build a tokenizing function that runs its input through the Analyzer and collects
+    * all tokens into a `Vector`
+    */
   def vectorTokenizer[F[_]](analyzer: Analyzer)(implicit F: Sync[F]): String => F[Vector[String]] =
     (s: String) =>
       F.delay {

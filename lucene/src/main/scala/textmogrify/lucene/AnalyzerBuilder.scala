@@ -26,6 +26,8 @@ import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter
 import org.apache.lucene.analysis.CharArraySet
 import org.apache.lucene.analysis.StopFilter
 
+/** Build an Analyzer or tokenizer function
+  */
 final class AnalyzerBuilder private (
     val lowerCase: Boolean,
     val foldASCII: Boolean,
@@ -69,6 +71,8 @@ final class AnalyzerBuilder private (
   def withStopWords(words: Set[String]): AnalyzerBuilder =
     copy(stopWords = words)
 
+  /** Build the Analyzer wrapped inside a Resource.
+    */
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
     Resource.make(F.delay(new Analyzer {
       protected def createComponents(fieldName: String): TokenStreamComponents = {
@@ -87,6 +91,8 @@ final class AnalyzerBuilder private (
       }
     }))(analyzer => F.delay(analyzer.close()))
 
+  /** Directly construct a tokenizing function
+    */
   def tokenizer[F[_]](implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
     self.build.map(a => Tokenizer.vectorTokenizer(a))
 }
