@@ -33,7 +33,7 @@ val luceneV = "9.3.0"
 val munitV = "1.0.0-M6"
 val munitCatsEffectV = "2.0.0-M1"
 
-lazy val root = tlCrossRootProject.aggregate(lucene, example, unidocs)
+lazy val root = tlCrossRootProject.aggregate(lucene, example, unidocs, benchmarks)
 
 lazy val lucene = project
   .in(file("lucene"))
@@ -75,3 +75,12 @@ lazy val unidocs = project
     name := "textmogrify-docs",
     ScalaUnidoc / unidoc / unidocProjectFilter := inProjects(lucene),
   )
+
+lazy val benchmarks = project
+  .in(file("benchmarks"))
+  .dependsOn(lucene)
+  .settings(
+    name := "textmogrify-benchmarks",
+    libraryDependencies += "org.typelevel" %% "cats-effect" % catsEffectV,
+  )
+  .enablePlugins(NoPublishPlugin, JmhPlugin)
