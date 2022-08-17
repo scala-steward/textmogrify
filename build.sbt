@@ -29,8 +29,9 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 val catsV = "2.8.0"
 val catsEffectV = "3.3.14"
 val fs2V = "3.2.12"
-val munitCatsEffectV = "1.0.7"
 val luceneV = "9.3.0"
+val munitV = "1.0.0-M6"
+val munitCatsEffectV = "2.0.0-M1"
 
 lazy val root = tlCrossRootProject.aggregate(lucene, example, unidocs)
 
@@ -45,7 +46,7 @@ lazy val lucene = project
       "co.fs2" %% "fs2-io" % fs2V,
       "org.apache.lucene" % "lucene-core" % luceneV,
       "org.apache.lucene" % "lucene-analysis-common" % luceneV,
-      "org.typelevel" %% "munit-cats-effect-3" % munitCatsEffectV % Test,
+      "org.typelevel" %% "munit-cats-effect" % munitCatsEffectV % Test,
     ),
   )
 

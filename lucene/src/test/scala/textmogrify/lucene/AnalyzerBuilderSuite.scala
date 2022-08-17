@@ -30,4 +30,12 @@ class AnalyzerBuilderSuite extends CatsEffectSuite {
     assertIO(actual, Vector("Like", "Jalapeños"))
   }
 
+  test("withASCIIFolding should fold 'ñ' to 'n'") {
+    val tokenizer = AnalyzerBuilder.default.withASCIIFolding.tokenizer[IO]
+    val actual = tokenizer.use { f =>
+      f("I like Jalapeños")
+    }
+    assertIO(actual, Vector("I", "like", "Jalapenos"))
+  }
+
 }

@@ -33,6 +33,10 @@ private[lucene] sealed abstract class TokenGetter {
   def close(): Unit
 }
 
+/** AnalyzerPipe provides methods to tokenize a possibly very long `Stream[F, String]`
+  * or `Stream[F, Byte]`, such as from a file. When possible, prefer starting with a
+  * `Stream[F, Byte]` and use `tokenizeBytes`.
+  */
 sealed abstract case class AnalyzerPipe[F[_]](readerF: Reader => Resource[F, TokenGetter])(implicit
     F: Async[F]
 ) {
@@ -109,6 +113,8 @@ sealed abstract case class AnalyzerPipe[F[_]](readerF: Reader => Resource[F, Tok
 }
 object AnalyzerPipe {
 
+  /** Build an AnalyzerPipe from a Resource wrapped Analyzer
+    */
   def fromResource[F[_]](analyzerR: Resource[F, Analyzer])(implicit F: Async[F]): AnalyzerPipe[F] =
     new AnalyzerPipe[F](reader =>
       analyzerR
