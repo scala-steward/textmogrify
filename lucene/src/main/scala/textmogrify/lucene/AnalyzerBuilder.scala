@@ -28,48 +28,76 @@ import org.apache.lucene.analysis.StopFilter
 
 /** Build an Analyzer or tokenizer function
   */
-final class AnalyzerBuilder private (
+sealed abstract class AnalyzerBuilder {
+
+  /** Adds a lowercasing stage to the analyzer pipeline */
+  def withLowerCasing: AnalyzerBuilder
+
+  /** Adds an ASCII folding stage to the analyzer pipeline
+    * ASCII folding converts alphanumeric and symbolic Unicode characters into
+    * their ASCII equivalents, if one exists.
+    */
+  def withASCIIFolding: AnalyzerBuilder
+
+  /** Adds a stop filter stage to analyzer pipeline for non-empty sets.
+    */
+  def withStopWords(words: Set[String]): AnalyzerBuilder
+
+  /** Build the Analyzer wrapped inside a Resource.
+    */
+  def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer]
+
+  /** Directly construct a tokenizing function
+    */
+  def tokenizer[F[_]](implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
+    build.map(a => Tokenizer.vectorTokenizer(a))
+}
+object AnalyzerBuilder {
+  def english: EnglishAnalyzerBuilder = new EnglishAnalyzerBuilder(
+    lowerCase = false,
+    foldASCII = false,
+    stopWords = Set.empty,
+    stemmer = false,
+  )
+}
+
+/** Build an Analyzer or tokenizer function
+  */
+final class EnglishAnalyzerBuilder private[lucene] (
     val lowerCase: Boolean,
     val foldASCII: Boolean,
     val stopWords: Set[String],
     val stemmer: Boolean,
-) { self =>
+) extends AnalyzerBuilder { self =>
 
   private def copy(
       lowerCase: Boolean = self.lowerCase,
       foldASCII: Boolean = self.foldASCII,
       stemmer: Boolean = self.stemmer,
       stopWords: Set[String] = self.stopWords,
-  ): AnalyzerBuilder =
-    new AnalyzerBuilder(
+  ): EnglishAnalyzerBuilder =
+    new EnglishAnalyzerBuilder(
       lowerCase = lowerCase,
       foldASCII = foldASCII,
       stemmer = stemmer,
       stopWords = stopWords,
     )
 
-  /** Adds a lowercasing stage to the analyzer pipeline */
-  def withLowerCasing: AnalyzerBuilder =
+  def withLowerCasing: EnglishAnalyzerBuilder =
     copy(lowerCase = true)
 
-  /** Adds an ASCII folding stage to the analyzer pipeline
-    * ASCII folding converts alphanumeric and symbolic Unicode characters into
-    * their ASCII equivalents, if one exists.
-    */
-  def withASCIIFolding: AnalyzerBuilder =
+  def withASCIIFolding: EnglishAnalyzerBuilder =
     copy(foldASCII = true)
+
+  def withStopWords(words: Set[String]): EnglishAnalyzerBuilder =
+    copy(stopWords = words)
 
   /** Adds the Porter Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
     * NOTE: Lowercasing is forced as it is required for the Lucene PorterStemFilter.
     */
-  def withPorterStemmer: AnalyzerBuilder =
+  def withPorterStemmer: EnglishAnalyzerBuilder =
     copy(stemmer = true, lowerCase = true)
-
-  /** Adds a stop filter stage to analyzer pipeline for non-empty sets.
-    */
-  def withStopWords(words: Set[String]): AnalyzerBuilder =
-    copy(stopWords = words)
 
   /** Build the Analyzer wrapped inside a Resource.
     */
@@ -90,17 +118,4 @@ final class AnalyzerBuilder private (
         new TokenStreamComponents(source, tokens)
       }
     }))(analyzer => F.delay(analyzer.close()))
-
-  /** Directly construct a tokenizing function
-    */
-  def tokenizer[F[_]](implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
-    self.build.map(a => Tokenizer.vectorTokenizer(a))
-}
-object AnalyzerBuilder {
-  def default: AnalyzerBuilder = new AnalyzerBuilder(
-    lowerCase = false,
-    foldASCII = false,
-    stemmer = false,
-    stopWords = Set.empty,
-  )
 }

@@ -23,7 +23,7 @@ import cats.effect._
 class AnalyzerBuilderSuite extends CatsEffectSuite {
 
   test("analyzer with stopWords should filter them out") {
-    val tokenizer = AnalyzerBuilder.default.withStopWords(Set("I")).tokenizer[IO]
+    val tokenizer = AnalyzerBuilder.english.withStopWords(Set("I")).tokenizer[IO]
     val actual = tokenizer.use { f =>
       f("I Like Jalapeños")
     }
@@ -31,7 +31,7 @@ class AnalyzerBuilderSuite extends CatsEffectSuite {
   }
 
   test("withASCIIFolding should fold 'ñ' to 'n'") {
-    val tokenizer = AnalyzerBuilder.default.withASCIIFolding.tokenizer[IO]
+    val tokenizer = AnalyzerBuilder.english.withASCIIFolding.tokenizer[IO]
     val actual = tokenizer.use { f =>
       f("I like Jalapeños")
     }

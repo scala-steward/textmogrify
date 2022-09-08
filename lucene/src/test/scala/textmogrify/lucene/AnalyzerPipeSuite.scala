@@ -26,19 +26,19 @@ class AnalyzerPipeSuite extends CatsEffectSuite {
   def input = Stream("Hello my name is Neeko,", "I enjoy jumping on counters.")
 
   test("fromAnalyzer should accept basic Analyzer") {
-    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.default.build)
+    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.english.build)
     val actual = analyzer.tokenizeStrings(input, 1).take(1).compile.toList
     assertIO(actual, List("Hello"))
   }
 
   test("tokenizeStrings should chunk on tokenN") {
-    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.default.build)
+    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.english.build)
     val actual = analyzer.tokenizeStrings(input, 3).take(6).chunks.compile.toVector
     assertIO(actual, Vector(Chunk("Hello", "my", "name"), Chunk("is", "Neeko", "I")))
   }
 
   test("tokenizeStrings works on infinite input streams") {
-    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.default.build)
+    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.english.build)
     val infInput = input.repeat
     val actual = analyzer.tokenizeStrings(infInput, 50).take(12).compile.toVector
     assertIO(
@@ -62,7 +62,7 @@ class AnalyzerPipeSuite extends CatsEffectSuite {
 
   test("tokenizeStringsRaw does not intersperse spaces between elements") {
     val input = Stream("combined", "word")
-    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.default.build)
+    val analyzer = AnalyzerPipe.fromResource[IO](AnalyzerBuilder.english.build)
     val actual = analyzer.tokenizeStringsRaw(input, 10).take(1).compile.toVector
     assertIO(actual, Vector("combinedword"))
   }

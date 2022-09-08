@@ -34,7 +34,7 @@ Typical usage is to use the `AnalyzerBuilder` to configure an `Analyzer` and cal
 import textmogrify.lucene.AnalyzerBuilder
 import cats.effect.IO
 
-val tokenizer = AnalyzerBuilder.default.withLowerCasing.withASCIIFolding.tokenizer[IO]
+val tokenizer = AnalyzerBuilder.english.withLowerCasing.withASCIIFolding.tokenizer[IO]
 
 val tokens: IO[Vector[String]] = tokenizer.use(
   f => f("I Like Jalapeños")
@@ -75,7 +75,7 @@ val input = Stream(
 import fs2.Pipe
 
 val normalizeMsgs: Pipe[IO, Msg, Doc] = msgs => {
-  val tokenizer = AnalyzerBuilder.default
+  val tokenizer = AnalyzerBuilder.english
     .withLowerCasing
     .withStopWords(Set("how", "do", "i", "my"))
     .withPorterStemmer

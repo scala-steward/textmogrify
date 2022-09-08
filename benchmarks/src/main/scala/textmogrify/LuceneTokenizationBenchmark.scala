@@ -53,7 +53,7 @@ class LuceneTokenizationBenchmark {
 
   @Benchmark
   def doNothing(): Vector[String] = {
-    val tokenizer = AnalyzerBuilder.default.withLowerCasing.tokenizer[IO]
+    val tokenizer = AnalyzerBuilder.english.withLowerCasing.tokenizer[IO]
     tokenizer
       .use(_ => lines.traverse(x => IO.pure(Vector(x))))
       .unsafeRunSync()
@@ -62,7 +62,7 @@ class LuceneTokenizationBenchmark {
 
   @Benchmark
   def manualToLowerCaseAndSplit(): Vector[String] = {
-    val tokenizer = AnalyzerBuilder.default.withLowerCasing.tokenizer[IO]
+    val tokenizer = AnalyzerBuilder.english.withLowerCasing.tokenizer[IO]
     tokenizer
       .use(_ => lines.traverse(x => IO.pure(x.toLowerCase.split(" ").toVector)))
       .unsafeRunSync()
@@ -71,7 +71,7 @@ class LuceneTokenizationBenchmark {
 
   @Benchmark
   def tokenizeAndLowerCase(): Vector[String] = {
-    val tokenizer = AnalyzerBuilder.default.withLowerCasing.tokenizer[IO]
+    val tokenizer = AnalyzerBuilder.english.withLowerCasing.tokenizer[IO]
     tokenizer
       .use(f => lines.traverse(f))
       .unsafeRunSync()

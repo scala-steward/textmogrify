@@ -25,7 +25,7 @@ object LuceneStreaming extends IOApp.Simple {
 
   def input: Stream[IO, Byte] = Files[IO].readAll(Path("LICENSE"))
 
-  val analyzer = AnalyzerBuilder.default.withLowerCasing.build[IO]
+  val analyzer = AnalyzerBuilder.english.withLowerCasing.build[IO]
   val analyzerPipe = AnalyzerPipe.fromResource(analyzer)
 
   val run = analyzerPipe.tokenizeBytes(input, 16).take(8).compile.toList.flatMap(IO.println)
