@@ -54,22 +54,26 @@ sealed abstract class AnalyzerBuilder {
   def tokenizer[F[_]](implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
     build.map(a => Tokenizer.vectorTokenizer(a))
 
-  private[lucene] def unsafeTokenStream(
+  private[lucene] def mkFromStandardTokenizer[F[_]](
       lowerCase: Boolean,
       foldASCII: Boolean,
       stopWords: Set[String],
-  )(source: TokenStream): TokenStream = {
-    var tokens = if (lowerCase) new LowerCaseFilter(source) else source
-    tokens = if (foldASCII) new ASCIIFoldingFilter(tokens) else tokens
-    tokens =
-      if (stopWords.isEmpty) tokens
-      else {
-        val stopSet = new CharArraySet(stopWords.size, true)
-        stopWords.foreach(w => stopSet.add(w))
-        new StopFilter(tokens, stopSet)
+  )(extras: TokenStream => TokenStream)(implicit F: Sync[F]): Resource[F, Analyzer] =
+    Resource.make(F.delay(new Analyzer {
+      protected def createComponents(fieldName: String): TokenStreamComponents = {
+        val source = new StandardTokenizer()
+        var tokens = if (lowerCase) new LowerCaseFilter(source) else source
+        tokens = if (foldASCII) new ASCIIFoldingFilter(tokens) else tokens
+        tokens =
+          if (stopWords.isEmpty) tokens
+          else {
+            val stopSet = new CharArraySet(stopWords.size, true)
+            stopWords.foreach(w => stopSet.add(w))
+            new StopFilter(tokens, stopSet)
+          }
+        new TokenStreamComponents(source, extras(tokens))
       }
-    tokens
-  }
+    }))(analyzer => F.delay(analyzer.close()))
 
 }
 object AnalyzerBuilder {
@@ -128,14 +132,9 @@ final class EnglishAnalyzerBuilder private[lucene] (
   /** Build the Analyzer wrapped inside a Resource.
     */
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
-    Resource.make(F.delay(new Analyzer {
-      protected def createComponents(fieldName: String): TokenStreamComponents = {
-        val source = new StandardTokenizer()
-        var tokens = unsafeTokenStream(lowerCase, foldASCII, stopWords)(source)
-        tokens = if (self.stemmer) new PorterStemFilter(tokens) else tokens
-        new TokenStreamComponents(source, tokens)
-      }
-    }))(analyzer => F.delay(analyzer.close()))
+    mkFromStandardTokenizer(lowerCase, foldASCII, stopWords)(ts =>
+      if (self.stemmer) new PorterStemFilter(ts) else ts
+    )
 }
 
 /** Build an Analyzer or tokenizer function
@@ -179,12 +178,7 @@ final class FrenchAnalyzerBuilder private[lucene] (
   /** Build the Analyzer wrapped inside a Resource.
     */
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
-    Resource.make(F.delay(new Analyzer {
-      protected def createComponents(fieldName: String): TokenStreamComponents = {
-        val source = new StandardTokenizer()
-        var tokens = unsafeTokenStream(lowerCase, foldASCII, stopWords)(source)
-        tokens = if (self.stemmer) new FrenchLightStemFilter(tokens) else tokens
-        new TokenStreamComponents(source, tokens)
-      }
-    }))(analyzer => F.delay(analyzer.close()))
+    mkFromStandardTokenizer(lowerCase, foldASCII, stopWords)(ts =>
+      if (self.stemmer) new FrenchLightStemFilter(ts) else ts
+    )
 }
