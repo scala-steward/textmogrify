@@ -26,6 +26,7 @@ import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter
 import org.apache.lucene.analysis.CharArraySet
 import org.apache.lucene.analysis.StopFilter
+import org.apache.lucene.analysis.TokenStream
 
 /** Build an Analyzer or tokenizer function
   */
@@ -52,6 +53,24 @@ sealed abstract class AnalyzerBuilder {
     */
   def tokenizer[F[_]](implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
     build.map(a => Tokenizer.vectorTokenizer(a))
+
+  private[lucene] def unsafeTokenStream(
+      lowerCase: Boolean,
+      foldASCII: Boolean,
+      stopWords: Set[String],
+  )(source: TokenStream): TokenStream = {
+    var tokens = if (lowerCase) new LowerCaseFilter(source) else source
+    tokens = if (foldASCII) new ASCIIFoldingFilter(tokens) else tokens
+    tokens =
+      if (stopWords.isEmpty) tokens
+      else {
+        val stopSet = new CharArraySet(stopWords.size, true)
+        stopWords.foreach(w => stopSet.add(w))
+        new StopFilter(tokens, stopSet)
+      }
+    tokens
+  }
+
 }
 object AnalyzerBuilder {
   def english: EnglishAnalyzerBuilder = new EnglishAnalyzerBuilder(
@@ -112,15 +131,7 @@ final class EnglishAnalyzerBuilder private[lucene] (
     Resource.make(F.delay(new Analyzer {
       protected def createComponents(fieldName: String): TokenStreamComponents = {
         val source = new StandardTokenizer()
-        var tokens = if (self.lowerCase) new LowerCaseFilter(source) else source
-        tokens = if (self.foldASCII) new ASCIIFoldingFilter(tokens) else tokens
-        tokens =
-          if (self.stopWords.isEmpty) tokens
-          else {
-            val stopSet = new CharArraySet(self.stopWords.size, true)
-            stopWords.foreach(w => stopSet.add(w))
-            new StopFilter(tokens, stopSet)
-          }
+        var tokens = unsafeTokenStream(lowerCase, foldASCII, stopWords)(source)
         tokens = if (self.stemmer) new PorterStemFilter(tokens) else tokens
         new TokenStreamComponents(source, tokens)
       }
@@ -171,15 +182,7 @@ final class FrenchAnalyzerBuilder private[lucene] (
     Resource.make(F.delay(new Analyzer {
       protected def createComponents(fieldName: String): TokenStreamComponents = {
         val source = new StandardTokenizer()
-        var tokens = if (self.lowerCase) new LowerCaseFilter(source) else source
-        tokens = if (self.foldASCII) new ASCIIFoldingFilter(tokens) else tokens
-        tokens =
-          if (self.stopWords.isEmpty) tokens
-          else {
-            val stopSet = new CharArraySet(self.stopWords.size, true)
-            stopWords.foreach(w => stopSet.add(w))
-            new StopFilter(tokens, stopSet)
-          }
+        var tokens = unsafeTokenStream(lowerCase, foldASCII, stopWords)(source)
         tokens = if (self.stemmer) new FrenchLightStemFilter(tokens) else tokens
         new TokenStreamComponents(source, tokens)
       }
