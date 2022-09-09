@@ -99,14 +99,14 @@ final class EnglishAnalyzerBuilder private[lucene] (
   private def copy(
       lowerCase: Boolean = self.lowerCase,
       foldASCII: Boolean = self.foldASCII,
-      stemmer: Boolean = self.stemmer,
       stopWords: Set[String] = self.stopWords,
+      stemmer: Boolean = self.stemmer,
   ): EnglishAnalyzerBuilder =
     new EnglishAnalyzerBuilder(
       lowerCase = lowerCase,
       foldASCII = foldASCII,
-      stemmer = stemmer,
       stopWords = stopWords,
+      stemmer = stemmer,
     )
 
   def withLowerCasing: EnglishAnalyzerBuilder =
@@ -150,14 +150,14 @@ final class FrenchAnalyzerBuilder private[lucene] (
   private def copy(
       lowerCase: Boolean = self.lowerCase,
       foldASCII: Boolean = self.foldASCII,
-      stemmer: Boolean = self.stemmer,
       stopWords: Set[String] = self.stopWords,
+      stemmer: Boolean = self.stemmer,
   ): FrenchAnalyzerBuilder =
     new FrenchAnalyzerBuilder(
       lowerCase = lowerCase,
       foldASCII = foldASCII,
-      stemmer = stemmer,
       stopWords = stopWords,
+      stemmer = stemmer,
     )
 
   def withLowerCasing: FrenchAnalyzerBuilder =
