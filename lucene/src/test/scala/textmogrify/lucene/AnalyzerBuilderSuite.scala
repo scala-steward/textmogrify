@@ -95,7 +95,7 @@ class FrenchAnalyzerBuilderSuite extends CatsEffectSuite {
     assertIO(actual, Vector("J'aime", "Jalapeños"))
   }
 
-  test("french analyzer withPorterStemmer should lowercase and stem words") {
+  test("french analyzer withFrenchLightStemmer should lowercase and stem words") {
     val analyzer = AnalyzerBuilder.french.withFrenchLightStemmer
     val actual = analyzer.tokenizer[IO].use(f => f(jumping))
     // TODO: We should be able to prevent "Neeko" from being stemmed here with keyword support
