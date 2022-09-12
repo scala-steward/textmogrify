@@ -20,22 +20,48 @@ package lucene
 import munit.CatsEffectSuite
 import cats.effect._
 
-class AnalyzerBuilderSuite extends CatsEffectSuite {
+class EnglishAnalyzerBuilderSuite extends CatsEffectSuite {
 
-  test("analyzer with stopWords should filter them out") {
-    val tokenizer = AnalyzerBuilder.english.withStopWords(Set("I")).tokenizer[IO]
-    val actual = tokenizer.use { f =>
-      f("I Like Jalapeños")
-    }
+  val jalapenos = "I Like Jalapeños"
+  val jumping = "Neeko likes jumping on counters"
+
+  test("english analyzer default should tokenize without any transformations") {
+    val analyzer = AnalyzerBuilder.english
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("I", "Like", "Jalapeños"))
+  }
+
+  test("english analyzer withLowerCasing should lowercase all letters") {
+    val analyzer = AnalyzerBuilder.english.withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("i", "like", "jalapeños"))
+  }
+
+  test("english analyzer withASCIIFolding should fold 'ñ' to 'n'") {
+    val analyzer = AnalyzerBuilder.english.withASCIIFolding
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("I", "Like", "Jalapenos"))
+  }
+
+  test("english analyzer withStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.english.withStopWords(Set("I"))
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
     assertIO(actual, Vector("Like", "Jalapeños"))
   }
 
-  test("withASCIIFolding should fold 'ñ' to 'n'") {
-    val tokenizer = AnalyzerBuilder.english.withASCIIFolding.tokenizer[IO]
-    val actual = tokenizer.use { f =>
-      f("I like Jalapeños")
-    }
-    assertIO(actual, Vector("I", "like", "Jalapenos"))
+  test("english analyzer withPorterStemmer should lowercase and stem words") {
+    val analyzer = AnalyzerBuilder.english.withPorterStemmer
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("neeko", "like", "jump", "on", "counter"))
+  }
+
+  test("english analyzer builder settings can be chained") {
+    val analyzer = AnalyzerBuilder.english.withPorterStemmer
+      .withStopWords(Set("on"))
+      .withASCIIFolding
+      .withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("neeko", "like", "jump", "counter"))
   }
 
 }
