@@ -33,32 +33,21 @@ final case class Config(
     foldASCII: Boolean,
     stopWords: Set[String],
 ) {
-
-  /** Adds a lowercasing stage to the analyzer pipeline */
   def withLowerCasing: Config =
     copy(lowerCase = true)
 
-  /** Adds an ASCII folding stage to the analyzer pipeline
-    * ASCII folding converts alphanumeric and symbolic Unicode characters into
-    * their ASCII equivalents, if one exists.
-    */
   def withASCIIFolding: Config =
     copy(foldASCII = true)
 
-  /** Adds a stop filter stage to analyzer pipeline for non-empty sets.
-    */
   def withStopWords(words: Set[String]): Config =
     copy(stopWords = words)
-
 }
 object Config {
   def empty: Config = Config(false, false, Set.empty)
 }
 
-/** Build an Analyzer or tokenizer function
-  */
+/** Build an Analyzer or tokenizer function */
 sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
-
   type Builder <: AnalyzerBuilder
 
   def withConfig(config: Config): Builder
@@ -74,13 +63,11 @@ sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
   def withASCIIFolding: Builder =
     withConfig(config.withASCIIFolding)
 
-  /** Adds a stop filter stage to analyzer pipeline for non-empty sets.
-    */
+  /** Adds a stop filter stage to analyzer pipeline for non-empty sets. */
   def withStopWords(words: Set[String]): Builder =
     withConfig(config.withStopWords(words))
 
-  /** Build the Analyzer wrapped inside a Resource.
-    */
+  /** Build the Analyzer wrapped inside a Resource. */
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer]
 
   /** Directly construct a tokenizing function
@@ -109,33 +96,23 @@ sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
 
 }
 object AnalyzerBuilder {
-  def english: EnglishAnalyzerBuilder = new EnglishAnalyzerBuilder(
-    config = Config.empty,
-    stemmer = false,
-  )
-  def french: FrenchAnalyzerBuilder = new FrenchAnalyzerBuilder(
-    config = Config.empty,
-    stemmer = false,
-  )
+  def english: EnglishAnalyzerBuilder =
+    new EnglishAnalyzerBuilder(Config.empty, false)
+  def french: FrenchAnalyzerBuilder =
+    new FrenchAnalyzerBuilder(Config.empty, false)
 }
 
-/** Build an Analyzer or tokenizer function
-  */
 final class EnglishAnalyzerBuilder private[lucene] (
     config: Config,
     stemmer: Boolean,
 ) extends AnalyzerBuilder(config) { self =>
-
   type Builder = EnglishAnalyzerBuilder
 
   private def copy(
       newConfig: Config,
       stemmer: Boolean = self.stemmer,
   ): EnglishAnalyzerBuilder =
-    new EnglishAnalyzerBuilder(
-      config = newConfig,
-      stemmer = stemmer,
-    )
+    new EnglishAnalyzerBuilder(newConfig, stemmer)
 
   def withConfig(newConfig: Config): EnglishAnalyzerBuilder =
     copy(newConfig = newConfig)
@@ -147,29 +124,21 @@ final class EnglishAnalyzerBuilder private[lucene] (
   def withPorterStemmer: EnglishAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
 
-  /** Build the Analyzer wrapped inside a Resource.
-    */
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
     mkFromStandardTokenizer(config)(ts => if (self.stemmer) new PorterStemFilter(ts) else ts)
 }
 
-/** Build an Analyzer or tokenizer function
-  */
 final class FrenchAnalyzerBuilder private[lucene] (
     config: Config,
     stemmer: Boolean,
 ) extends AnalyzerBuilder(config) { self =>
-
   type Builder = FrenchAnalyzerBuilder
 
   private def copy(
       newConfig: Config,
       stemmer: Boolean = self.stemmer,
   ): FrenchAnalyzerBuilder =
-    new FrenchAnalyzerBuilder(
-      config = newConfig,
-      stemmer = stemmer,
-    )
+    new FrenchAnalyzerBuilder(newConfig, stemmer)
 
   def withConfig(newConfig: Config): FrenchAnalyzerBuilder =
     copy(newConfig = newConfig)
@@ -181,8 +150,6 @@ final class FrenchAnalyzerBuilder private[lucene] (
   def withFrenchLightStemmer: FrenchAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
 
-  /** Build the Analyzer wrapped inside a Resource.
-    */
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
     mkFromStandardTokenizer(config)(ts => if (self.stemmer) new FrenchLightStemFilter(ts) else ts)
 }
