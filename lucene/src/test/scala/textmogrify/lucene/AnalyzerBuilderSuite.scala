@@ -20,6 +20,36 @@ package lucene
 import munit.CatsEffectSuite
 import cats.effect._
 
+class DefaultAnalyzerBuilderSuite extends CatsEffectSuite {
+
+  val jalapenos = "I Like Jalapeños"
+
+  test("default analyzer default should tokenize without any transformations") {
+    val analyzer = AnalyzerBuilder.default
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("I", "Like", "Jalapeños"))
+  }
+
+  test("default analyzer withLowerCasing should lowercase all letters") {
+    val analyzer = AnalyzerBuilder.default.withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("i", "like", "jalapeños"))
+  }
+
+  test("default analyzer withASCIIFolding should fold 'ñ' to 'n'") {
+    val analyzer = AnalyzerBuilder.default.withASCIIFolding
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("I", "Like", "Jalapenos"))
+  }
+
+  test("default analyzer withStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.default.withStopWords(Set("I"))
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Like", "Jalapeños"))
+  }
+
+}
+
 class EnglishAnalyzerBuilderSuite extends CatsEffectSuite {
 
   val jalapenos = "I Like Jalapeños"

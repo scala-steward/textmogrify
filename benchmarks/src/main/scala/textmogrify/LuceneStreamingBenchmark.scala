@@ -51,7 +51,7 @@ class LuceneStreamingBenchmark {
 
   @Benchmark
   def tokenizeBytesTokenN1(): String = {
-    val analyzer = AnalyzerBuilder.english.withLowerCasing.build[IO]
+    val analyzer = AnalyzerBuilder.default.withLowerCasing.build[IO]
     val pipe = AnalyzerPipe.fromResource(analyzer)
     val bytes: Stream[IO, Byte] = Stream.emits(asciiBytes)
     pipe
@@ -64,7 +64,7 @@ class LuceneStreamingBenchmark {
 
   @Benchmark
   def tokenizeBytesTokenN128(): String = {
-    val analyzer = AnalyzerBuilder.english.withLowerCasing.build[IO]
+    val analyzer = AnalyzerBuilder.default.withLowerCasing.build[IO]
     val pipe = AnalyzerPipe.fromResource(analyzer)
     val bytes: Stream[IO, Byte] = Stream.emits(asciiBytes)
     pipe

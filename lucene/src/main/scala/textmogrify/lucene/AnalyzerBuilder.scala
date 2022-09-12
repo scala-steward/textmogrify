@@ -97,12 +97,34 @@ sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
 
 }
 object AnalyzerBuilder {
+  def default: DefaultAnalyzerBuilder =
+    new DefaultAnalyzerBuilder(Config.empty)
   def english: EnglishAnalyzerBuilder =
     new EnglishAnalyzerBuilder(Config.empty, false)
   def french: FrenchAnalyzerBuilder =
     new FrenchAnalyzerBuilder(Config.empty, false)
   def spanish: SpanishAnalyzerBuilder =
     new SpanishAnalyzerBuilder(Config.empty, false)
+}
+
+final class DefaultAnalyzerBuilder private[lucene] (config: Config)
+    extends AnalyzerBuilder(config) { self =>
+  type Builder = DefaultAnalyzerBuilder
+
+  def withConfig(newConfig: Config): DefaultAnalyzerBuilder =
+    new DefaultAnalyzerBuilder(newConfig)
+
+  def english: EnglishAnalyzerBuilder =
+    new EnglishAnalyzerBuilder(config, false)
+
+  def french: FrenchAnalyzerBuilder =
+    new FrenchAnalyzerBuilder(config, false)
+
+  def spanish: SpanishAnalyzerBuilder =
+    new SpanishAnalyzerBuilder(config, false)
+
+  def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
+    mkFromStandardTokenizer(config)(identity)
 }
 
 final class EnglishAnalyzerBuilder private[lucene] (
