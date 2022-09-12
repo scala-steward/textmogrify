@@ -26,14 +26,13 @@ object FrenchPipeline extends IOApp.Simple {
   case class Doc(id: Int, tokens: Vector[String])
 
   val input = Stream(
-    Msg(0, "How do i trim my cats nails?"),
-    Msg(1, "trimming cat nail"),
-    Msg(2, "cat scratching furniture"),
+    Msg(0, "J'aime Les Jalapeños"),
+    Msg(1, "Neeko aime sauter sur les compteurs"),
   )
 
   val tokenizeMsgs: Pipe[IO, Msg, Doc] = msgs => {
     val tokenizer = AnalyzerBuilder.french.withLowerCasing
-      .withStopWords(Set("how", "do", "i", "my"))
+      .withStopWords(Set("les", "sur"))
       .withFrenchLightStemmer
       .tokenizer[IO]
     Stream
