@@ -20,6 +20,7 @@ import cats.effect.kernel.{Resource, Sync}
 import org.apache.lucene.analysis.Analyzer.TokenStreamComponents
 import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.apache.lucene.analysis.en.PorterStemFilter
+import org.apache.lucene.analysis.es.SpanishLightStemFilter
 import org.apache.lucene.analysis.fr.FrenchLightStemFilter
 import org.apache.lucene.analysis.LowerCaseFilter
 import org.apache.lucene.analysis.Analyzer
@@ -100,6 +101,8 @@ object AnalyzerBuilder {
     new EnglishAnalyzerBuilder(Config.empty, false)
   def french: FrenchAnalyzerBuilder =
     new FrenchAnalyzerBuilder(Config.empty, false)
+  def spanish: SpanishAnalyzerBuilder =
+    new SpanishAnalyzerBuilder(Config.empty, false)
 }
 
 final class EnglishAnalyzerBuilder private[lucene] (
@@ -152,4 +155,30 @@ final class FrenchAnalyzerBuilder private[lucene] (
 
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
     mkFromStandardTokenizer(config)(ts => if (self.stemmer) new FrenchLightStemFilter(ts) else ts)
+}
+
+final class SpanishAnalyzerBuilder private[lucene] (
+    config: Config,
+    stemmer: Boolean,
+) extends AnalyzerBuilder(config) { self =>
+  type Builder = SpanishAnalyzerBuilder
+
+  private def copy(
+      newConfig: Config,
+      stemmer: Boolean = self.stemmer,
+  ): SpanishAnalyzerBuilder =
+    new SpanishAnalyzerBuilder(newConfig, stemmer)
+
+  def withConfig(newConfig: Config): SpanishAnalyzerBuilder =
+    copy(newConfig = newConfig)
+
+  /** Adds the SpanishLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
+    * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
+    * NOTE: Lowercasing is forced as it is required for the Lucene SpanishLightStemFilter.
+    */
+  def withSpanishLightStemmer: SpanishAnalyzerBuilder =
+    copy(config.copy(lowerCase = true), stemmer = true)
+
+  def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
+    mkFromStandardTokenizer(config)(ts => if (self.stemmer) new SpanishLightStemFilter(ts) else ts)
 }

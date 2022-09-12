@@ -112,3 +112,50 @@ class FrenchAnalyzerBuilderSuite extends CatsEffectSuite {
   }
 
 }
+
+class SpanishAnalyzerBuilderSuite extends CatsEffectSuite {
+
+  val jalapenos = "Me gustan los jalapeños"
+  val jumping = "A Neeko le gusta saltar sobre los mostradores"
+
+  test("spanish analyzer default should tokenize without any transformations") {
+    val analyzer = AnalyzerBuilder.spanish
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Me", "gustan", "los", "jalapeños"))
+  }
+
+  test("spanish analyzer withLowerCasing should lowercase all letters") {
+    val analyzer = AnalyzerBuilder.spanish.withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("me", "gustan", "los", "jalapeños"))
+  }
+
+  test("spanish analyzer withASCIIFolding should fold 'ñ' to 'n'") {
+    val analyzer = AnalyzerBuilder.spanish.withASCIIFolding
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Me", "gustan", "los", "jalapenos"))
+  }
+
+  test("spanish analyzer withStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.spanish.withStopWords(Set("le", "los"))
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Me", "gustan", "jalapeños"))
+  }
+
+  test("spanish analyzer withSpanishLightStemmer should lowercase and stem words") {
+    val analyzer = AnalyzerBuilder.spanish.withSpanishLightStemmer
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    // TODO: We should be able to prevent "Neeko" from being stemmed here with keyword support
+    assertIO(actual, Vector("a", "neek", "le", "gust", "saltar", "sobr", "los", "mostrador"))
+  }
+
+  test("spanish analyzer builder settings can be chained") {
+    val analyzer = AnalyzerBuilder.spanish.withSpanishLightStemmer
+      .withStopWords(Set("le", "los"))
+      .withASCIIFolding
+      .withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("a", "neek", "gust", "saltar", "sobr", "mostrador"))
+  }
+
+}
