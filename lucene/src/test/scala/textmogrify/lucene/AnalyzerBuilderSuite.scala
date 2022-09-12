@@ -65,3 +65,50 @@ class EnglishAnalyzerBuilderSuite extends CatsEffectSuite {
   }
 
 }
+
+class FrenchAnalyzerBuilderSuite extends CatsEffectSuite {
+
+  val jalapenos = "J'aime Les Jalapeños"
+  val jumping = "Neeko aime sauter sur les compteurs"
+
+  test("french analyzer default should tokenize without any transformations") {
+    val analyzer = AnalyzerBuilder.french
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("J'aime", "Les", "Jalapeños"))
+  }
+
+  test("french analyzer withLowerCasing should lowercase all letters") {
+    val analyzer = AnalyzerBuilder.french.withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("j'aime", "les", "jalapeños"))
+  }
+
+  test("french analyzer withASCIIFolding should fold 'ñ' to 'n'") {
+    val analyzer = AnalyzerBuilder.french.withASCIIFolding
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("J'aime", "Les", "Jalapenos"))
+  }
+
+  test("french analyzer withStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.french.withStopWords(Set("Les"))
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("J'aime", "Jalapeños"))
+  }
+
+  test("french analyzer withPorterStemmer should lowercase and stem words") {
+    val analyzer = AnalyzerBuilder.french.withFrenchLightStemmer
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    // TODO: We should be able to prevent "Neeko" from being stemmed here with keyword support
+    assertIO(actual, Vector("neko", "aime", "saut", "sur", "les", "compt"))
+  }
+
+  test("french analyzer builder settings can be chained") {
+    val analyzer = AnalyzerBuilder.french.withFrenchLightStemmer
+      .withStopWords(Set("on"))
+      .withASCIIFolding
+      .withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("neko", "aime", "saut", "sur", "les", "compt"))
+  }
+
+}
