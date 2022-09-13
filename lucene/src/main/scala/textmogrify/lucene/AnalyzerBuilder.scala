@@ -22,6 +22,8 @@ import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.apache.lucene.analysis.en.PorterStemFilter
 import org.apache.lucene.analysis.es.SpanishLightStemFilter
 import org.apache.lucene.analysis.fr.FrenchLightStemFilter
+import org.apache.lucene.analysis.it.ItalianLightStemFilter
+import org.apache.lucene.analysis.de.GermanLightStemFilter
 import org.apache.lucene.analysis.LowerCaseFilter
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter
@@ -103,6 +105,10 @@ object AnalyzerBuilder {
     new EnglishAnalyzerBuilder(Config.empty, false)
   def french: FrenchAnalyzerBuilder =
     new FrenchAnalyzerBuilder(Config.empty, false)
+  def german: GermanAnalyzerBuilder =
+    new GermanAnalyzerBuilder(Config.empty, false)
+  def italian: ItalianAnalyzerBuilder =
+    new ItalianAnalyzerBuilder(Config.empty, false)
   def spanish: SpanishAnalyzerBuilder =
     new SpanishAnalyzerBuilder(Config.empty, false)
 }
@@ -203,4 +209,56 @@ final class SpanishAnalyzerBuilder private[lucene] (
 
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
     mkFromStandardTokenizer(config)(ts => if (self.stemmer) new SpanishLightStemFilter(ts) else ts)
+}
+
+final class ItalianAnalyzerBuilder private[lucene] (
+    config: Config,
+    stemmer: Boolean,
+) extends AnalyzerBuilder(config) { self =>
+  type Builder = ItalianAnalyzerBuilder
+
+  private def copy(
+      newConfig: Config,
+      stemmer: Boolean = self.stemmer,
+  ): ItalianAnalyzerBuilder =
+    new ItalianAnalyzerBuilder(newConfig, stemmer)
+
+  def withConfig(newConfig: Config): ItalianAnalyzerBuilder =
+    copy(newConfig = newConfig)
+
+  /** Adds the ItalianLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
+    * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
+    * NOTE: Lowercasing is forced as it is required for the Lucene ItalianLightStemFilter.
+    */
+  def withItalianLightStemmer: ItalianAnalyzerBuilder =
+    copy(config.copy(lowerCase = true), stemmer = true)
+
+  def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
+    mkFromStandardTokenizer(config)(ts => if (self.stemmer) new ItalianLightStemFilter(ts) else ts)
+}
+
+final class GermanAnalyzerBuilder private[lucene] (
+    config: Config,
+    stemmer: Boolean,
+) extends AnalyzerBuilder(config) { self =>
+  type Builder = GermanAnalyzerBuilder
+
+  private def copy(
+      newConfig: Config,
+      stemmer: Boolean = self.stemmer,
+  ): GermanAnalyzerBuilder =
+    new GermanAnalyzerBuilder(newConfig, stemmer)
+
+  def withConfig(newConfig: Config): GermanAnalyzerBuilder =
+    copy(newConfig = newConfig)
+
+  /** Adds the GermanLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
+    * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
+    * NOTE: Lowercasing is forced as it is required for the Lucene GermanLightStemFilter.
+    */
+  def withGermanLightStemmer: GermanAnalyzerBuilder =
+    copy(config.copy(lowerCase = true), stemmer = true)
+
+  def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
+    mkFromStandardTokenizer(config)(ts => if (self.stemmer) new GermanLightStemFilter(ts) else ts)
 }
