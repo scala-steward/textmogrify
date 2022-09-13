@@ -32,7 +32,7 @@ object Pipeline extends IOApp.Simple {
   )
 
   val tokenizeMsgs: Pipe[IO, Msg, Doc] = msgs => {
-    val tokenizer = AnalyzerBuilder.default.withLowerCasing
+    val tokenizer = AnalyzerBuilder.english.withLowerCasing
       .withStopWords(Set("how", "do", "i", "my"))
       .withPorterStemmer
       .tokenizer[IO]
