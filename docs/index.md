@@ -4,7 +4,7 @@ Textmogrify is a pre-alpha text manipulation library that hopefully works well w
 
 ## Usage
 
-This library is currently available for Scala binary versions 2.13 and 3.1.
+This library is currently available for Scala binary versions 2.13 and 3.2.
 
 To use the latest version, include the following in your `build.sbt`:
 
@@ -26,9 +26,10 @@ libraryDependencies ++= Seq(
 
 The Lucene module lets you use a Lucene [Analyzer][analyzer] to modify text, additionally it provides helpers to use `Analyzer`s with an fs2 [Stream][stream].
 
+
 ### Basics
 
-Typical usage is to use the `AnalyzerBuilder` to configure an `Analyzer` and call `.tokenizer` to get a `Resource[F, String => F[Vector[String]]]`:
+Typical usage is to use the `AnalyzerBuilder` to configure an `Analyzer` and call `.tokenizer[F]` to get a `Resource[F, String => F[Vector[String]]]`:
 
 ```scala mdoc:silent
 import textmogrify.lucene.AnalyzerBuilder
@@ -52,9 +53,26 @@ tokens.unsafeRunSync()
 We can see that our text was lowercased and the unicode `ñ` replaced with an ASCII `n`.
 
 
+### Languages
+
+Textmogrify comes with support for multiple languages.
+When setting up an `AnalyzerBuilder` you'll have access to language specific options once you call one of the helper language methods like `english` or `french`.
+Specifying a language preserves the configuration set beforehand.
+
+```scala mdoc:silent
+val base = AnalyzerBuilder.default.withLowerCasing.withASCIIFolding
+
+val en = base.english.withPorterStemmer.tokenizer[IO]
+val fr = base.french.withFrenchLightStemmer.tokenizer[IO]
+val es = base.spanish.withSpanishLightStemmer.tokenizer[IO]
+```
+
+All of `en`, `fr`, and `es` will both lowercase and asciifold their inputs in addition to using their language specific stemmers.
+
+
 ### Pipelines
 
-Another common use is to construct a `Pipe`, or `Stream` to `Stream` function.
+Another common use is to construct a `Pipe`, or `Stream` to `Stream` function using an `Analyzer`.
 Let's say we have some messages we want to analyze and index as part of some search component.
 Given a raw `Msg` type and an analyzed `Doc` type, we want to transform a `Stream[F, Msg]` into a `Stream[F, Doc]`.
 
