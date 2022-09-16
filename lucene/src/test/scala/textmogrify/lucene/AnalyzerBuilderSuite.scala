@@ -42,8 +42,8 @@ class DefaultAnalyzerBuilderSuite extends CatsEffectSuite {
     assertIO(actual, Vector("I", "Like", "Jalapenos"))
   }
 
-  test("default analyzer withStopWords should filter them out") {
-    val analyzer = AnalyzerBuilder.default.withStopWords(Set("I"))
+  test("default analyzer withCustomStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.default.withCustomStopWords(Set("I"))
     val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
     assertIO(actual, Vector("Like", "Jalapeños"))
   }
@@ -73,8 +73,8 @@ class EnglishAnalyzerBuilderSuite extends CatsEffectSuite {
     assertIO(actual, Vector("I", "Like", "Jalapenos"))
   }
 
-  test("english analyzer withStopWords should filter them out") {
-    val analyzer = AnalyzerBuilder.english.withStopWords(Set("I"))
+  test("english analyzer withCustomStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.english.withCustomStopWords(Set("I"))
     val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
     assertIO(actual, Vector("Like", "Jalapeños"))
   }
@@ -87,7 +87,7 @@ class EnglishAnalyzerBuilderSuite extends CatsEffectSuite {
 
   test("english analyzer builder settings can be chained") {
     val analyzer = AnalyzerBuilder.english.withPorterStemmer
-      .withStopWords(Set("on"))
+      .withCustomStopWords(Set("on"))
       .withASCIIFolding
       .withLowerCasing
     val actual = analyzer.tokenizer[IO].use(f => f(jumping))
@@ -119,8 +119,8 @@ class FrenchAnalyzerBuilderSuite extends CatsEffectSuite {
     assertIO(actual, Vector("J'aime", "Les", "Jalapenos"))
   }
 
-  test("french analyzer withStopWords should filter them out") {
-    val analyzer = AnalyzerBuilder.french.withStopWords(Set("Les"))
+  test("french analyzer withCustomStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.french.withCustomStopWords(Set("Les"))
     val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
     assertIO(actual, Vector("J'aime", "Jalapeños"))
   }
@@ -134,7 +134,7 @@ class FrenchAnalyzerBuilderSuite extends CatsEffectSuite {
 
   test("french analyzer builder settings can be chained") {
     val analyzer = AnalyzerBuilder.french.withFrenchLightStemmer
-      .withStopWords(Set("on"))
+      .withCustomStopWords(Set("on"))
       .withASCIIFolding
       .withLowerCasing
     val actual = analyzer.tokenizer[IO].use(f => f(jumping))
@@ -166,8 +166,8 @@ class SpanishAnalyzerBuilderSuite extends CatsEffectSuite {
     assertIO(actual, Vector("Me", "gustan", "los", "jalapenos"))
   }
 
-  test("spanish analyzer withStopWords should filter them out") {
-    val analyzer = AnalyzerBuilder.spanish.withStopWords(Set("le", "los"))
+  test("spanish analyzer withCustomStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.spanish.withCustomStopWords(Set("le", "los"))
     val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
     assertIO(actual, Vector("Me", "gustan", "jalapeños"))
   }
@@ -181,7 +181,7 @@ class SpanishAnalyzerBuilderSuite extends CatsEffectSuite {
 
   test("spanish analyzer builder settings can be chained") {
     val analyzer = AnalyzerBuilder.spanish.withSpanishLightStemmer
-      .withStopWords(Set("le", "los"))
+      .withCustomStopWords(Set("le", "los"))
       .withASCIIFolding
       .withLowerCasing
     val actual = analyzer.tokenizer[IO].use(f => f(jumping))
@@ -213,8 +213,8 @@ class ItalianAnalyzerBuilderSuite extends CatsEffectSuite {
     assertIO(actual, Vector("Mi", "piacciono", "i", "jalapenos"))
   }
 
-  test("italian analyzer withStopWords should filter them out") {
-    val analyzer = AnalyzerBuilder.italian.withStopWords(Set("i"))
+  test("italian analyzer withCustomStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.italian.withCustomStopWords(Set("i"))
     val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
     assertIO(actual, Vector("Mi", "piacciono", "jalapeños"))
   }
@@ -227,7 +227,7 @@ class ItalianAnalyzerBuilderSuite extends CatsEffectSuite {
 
   test("italian analyzer builder settings can be chained") {
     val analyzer = AnalyzerBuilder.italian.withItalianLightStemmer
-      .withStopWords(Set("a", "sui"))
+      .withCustomStopWords(Set("a", "sui"))
       .withASCIIFolding
       .withLowerCasing
     val actual = analyzer.tokenizer[IO].use(f => f(jumping))
@@ -259,8 +259,8 @@ class GermanAnalyzerBuilderSuite extends CatsEffectSuite {
     assertIO(actual, Vector("Ich", "mag", "Jalapenos"))
   }
 
-  test("german analyzer withStopWords should filter them out") {
-    val analyzer = AnalyzerBuilder.german.withStopWords(Set("Ich"))
+  test("german analyzer withCustomStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.german.withCustomStopWords(Set("Ich"))
     val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
     assertIO(actual, Vector("mag", "Jalapeños"))
   }
@@ -273,7 +273,7 @@ class GermanAnalyzerBuilderSuite extends CatsEffectSuite {
 
   test("german analyzer builder settings can be chained") {
     val analyzer = AnalyzerBuilder.german.withGermanLightStemmer
-      .withStopWords(Set("auf"))
+      .withCustomStopWords(Set("auf"))
       .withASCIIFolding
       .withLowerCasing
     val actual = analyzer.tokenizer[IO].use(f => f(jumping))

@@ -34,7 +34,7 @@ import org.apache.lucene.analysis.TokenStream
 final case class Config(
     lowerCase: Boolean,
     foldASCII: Boolean,
-    stopWords: Set[String],
+    customStopWords: Set[String],
 ) {
   def withLowerCasing: Config =
     copy(lowerCase = true)
@@ -42,8 +42,8 @@ final case class Config(
   def withASCIIFolding: Config =
     copy(foldASCII = true)
 
-  def withStopWords(words: Set[String]): Config =
-    copy(stopWords = words)
+  def withCustomStopWords(words: Set[String]): Config =
+    copy(customStopWords = words)
 }
 object Config {
   def empty: Config = Config(false, false, Set.empty)
@@ -67,8 +67,8 @@ sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
     withConfig(config.withASCIIFolding)
 
   /** Adds a stop filter stage to analyzer pipeline for non-empty sets. */
-  def withStopWords(words: Set[String]): Builder =
-    withConfig(config.withStopWords(words))
+  def withCustomStopWords(words: Set[String]): Builder =
+    withConfig(config.withCustomStopWords(words))
 
   /** Build the Analyzer wrapped inside a Resource. */
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer]
@@ -87,10 +87,10 @@ sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
         var tokens = if (config.lowerCase) new LowerCaseFilter(source) else source
         tokens = if (config.foldASCII) new ASCIIFoldingFilter(tokens) else tokens
         tokens =
-          if (config.stopWords.isEmpty) tokens
+          if (config.customStopWords.isEmpty) tokens
           else {
-            val stopSet = new CharArraySet(config.stopWords.size, true)
-            config.stopWords.foreach(w => stopSet.add(w))
+            val stopSet = new CharArraySet(config.customStopWords.size, true)
+            config.customStopWords.foreach(w => stopSet.add(w))
             new StopFilter(tokens, stopSet)
           }
         new TokenStreamComponents(source, extras(tokens))
