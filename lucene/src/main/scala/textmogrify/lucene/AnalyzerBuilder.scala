@@ -30,10 +30,16 @@ import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter
 import org.apache.lucene.analysis.CharArraySet
 import org.apache.lucene.analysis.StopFilter
 import org.apache.lucene.analysis.TokenStream
+import org.apache.lucene.analysis.en.EnglishAnalyzer.{getDefaultStopSet => getEnglishStopSet}
+import org.apache.lucene.analysis.fr.FrenchAnalyzer.{getDefaultStopSet => getFrenchStopSet}
+import org.apache.lucene.analysis.es.SpanishAnalyzer.{getDefaultStopSet => getSpanishStopSet}
+import org.apache.lucene.analysis.it.ItalianAnalyzer.{getDefaultStopSet => getItalianStopSet}
+import org.apache.lucene.analysis.de.GermanAnalyzer.{getDefaultStopSet => getGermanStopSet}
 
 final case class Config(
     lowerCase: Boolean,
     foldASCII: Boolean,
+    defaultStopWords: Boolean,
     customStopWords: Set[String],
 ) {
   def withLowerCasing: Config =
@@ -42,17 +48,21 @@ final case class Config(
   def withASCIIFolding: Config =
     copy(foldASCII = true)
 
+  def withDefaultStopWords: Config =
+    copy(defaultStopWords = true)
+
   def withCustomStopWords(words: Set[String]): Config =
     copy(customStopWords = words)
 }
 object Config {
-  def empty: Config = Config(false, false, Set.empty)
+  def empty: Config = Config(false, false, false, Set.empty)
 }
 
 /** Build an Analyzer or tokenizer function */
 sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
   type Builder <: AnalyzerBuilder
 
+  def defaultStopWords: CharArraySet
   def withConfig(config: Config): Builder
 
   /** Adds a lowercasing stage to the analyzer pipeline */
@@ -65,6 +75,9 @@ sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
     */
   def withASCIIFolding: Builder =
     withConfig(config.withASCIIFolding)
+
+  def withDefaultStopWords: Builder =
+    withConfig(config.withDefaultStopWords)
 
   /** Adds a stop filter stage to analyzer pipeline for non-empty sets. */
   def withCustomStopWords(words: Set[String]): Builder =
@@ -86,6 +99,7 @@ sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
         val source = new StandardTokenizer()
         var tokens = if (config.lowerCase) new LowerCaseFilter(source) else source
         tokens = if (config.foldASCII) new ASCIIFoldingFilter(tokens) else tokens
+        tokens = if (config.defaultStopWords) new StopFilter(tokens, defaultStopWords) else tokens
         tokens =
           if (config.customStopWords.isEmpty) tokens
           else {
@@ -117,6 +131,8 @@ final class DefaultAnalyzerBuilder private[lucene] (config: Config)
     extends AnalyzerBuilder(config) { self =>
   type Builder = DefaultAnalyzerBuilder
 
+  def defaultStopWords: CharArraySet = CharArraySet.EMPTY_SET
+
   def withConfig(newConfig: Config): DefaultAnalyzerBuilder =
     new DefaultAnalyzerBuilder(newConfig)
 
@@ -145,6 +161,7 @@ final class EnglishAnalyzerBuilder private[lucene] (
   ): EnglishAnalyzerBuilder =
     new EnglishAnalyzerBuilder(newConfig, stemmer)
 
+  def defaultStopWords: CharArraySet = getEnglishStopSet()
   def withConfig(newConfig: Config): EnglishAnalyzerBuilder =
     copy(newConfig = newConfig)
 
@@ -171,6 +188,7 @@ final class FrenchAnalyzerBuilder private[lucene] (
   ): FrenchAnalyzerBuilder =
     new FrenchAnalyzerBuilder(newConfig, stemmer)
 
+  def defaultStopWords: CharArraySet = getFrenchStopSet()
   def withConfig(newConfig: Config): FrenchAnalyzerBuilder =
     copy(newConfig = newConfig)
 
@@ -197,6 +215,7 @@ final class SpanishAnalyzerBuilder private[lucene] (
   ): SpanishAnalyzerBuilder =
     new SpanishAnalyzerBuilder(newConfig, stemmer)
 
+  def defaultStopWords: CharArraySet = getSpanishStopSet()
   def withConfig(newConfig: Config): SpanishAnalyzerBuilder =
     copy(newConfig = newConfig)
 
@@ -223,6 +242,7 @@ final class ItalianAnalyzerBuilder private[lucene] (
   ): ItalianAnalyzerBuilder =
     new ItalianAnalyzerBuilder(newConfig, stemmer)
 
+  def defaultStopWords: CharArraySet = getItalianStopSet()
   def withConfig(newConfig: Config): ItalianAnalyzerBuilder =
     copy(newConfig = newConfig)
 
@@ -249,6 +269,7 @@ final class GermanAnalyzerBuilder private[lucene] (
   ): GermanAnalyzerBuilder =
     new GermanAnalyzerBuilder(newConfig, stemmer)
 
+  def defaultStopWords: CharArraySet = getGermanStopSet()
   def withConfig(newConfig: Config): GermanAnalyzerBuilder =
     copy(newConfig = newConfig)
 
