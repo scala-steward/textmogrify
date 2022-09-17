@@ -169,7 +169,8 @@ final class EnglishAnalyzerBuilder private[lucene] (
     * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
     * build the default StopFilter
     */
-  lazy val defaultStopWords: Set[String] = getEnglishStopSet().asScala.map(_.toString()).toSet
+  lazy val defaultStopWords: Set[String] =
+    getEnglishStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
 
   /** Adds the Porter Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -205,7 +206,8 @@ final class FrenchAnalyzerBuilder private[lucene] (
     * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
     * build the default StopFilter
     */
-  lazy val defaultStopWords: Set[String] = getFrenchStopSet().asScala.map(_.toString()).toSet
+  lazy val defaultStopWords: Set[String] =
+    getFrenchStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
 
   /** Adds the FrenchLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -240,7 +242,8 @@ final class SpanishAnalyzerBuilder private[lucene] (
     * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
     * build the default StopFilter
     */
-  lazy val defaultStopWords: Set[String] = getSpanishStopSet().asScala.map(_.toString()).toSet
+  lazy val defaultStopWords: Set[String] =
+    getSpanishStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
 
   /** Adds the SpanishLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -275,7 +278,8 @@ final class ItalianAnalyzerBuilder private[lucene] (
     * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
     * build the default StopFilter
     */
-  lazy val defaultStopWords: Set[String] = getItalianStopSet().asScala.map(_.toString()).toSet
+  lazy val defaultStopWords: Set[String] =
+    getItalianStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
 
   /** Adds the ItalianLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -310,7 +314,8 @@ final class GermanAnalyzerBuilder private[lucene] (
     * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
     * build the default StopFilter
     */
-  lazy val defaultStopWords: Set[String] = getGermanStopSet().asScala.map(_.toString()).toSet
+  lazy val defaultStopWords: Set[String] =
+    getGermanStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
 
   /** Adds the GermanLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
