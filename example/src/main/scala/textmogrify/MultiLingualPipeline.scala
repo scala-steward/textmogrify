@@ -41,7 +41,7 @@ object MultiLingualPipeline extends IOApp.Simple {
   )
 
   def multiTokenizer: Resource[IO, Msg => IO[Vector[String]]] = {
-    val base = AnalyzerBuilder.default.withLowerCasing.withASCIIFolding
+    val base = AnalyzerBuilder.default.withLowerCasing.withASCIIFolding.withDefaultStopWords
 
     val englishA = base.english.withPorterStemmer.tokenizer[IO]
     val frenchA = base.french.withFrenchLightStemmer.tokenizer[IO]
