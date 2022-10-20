@@ -154,7 +154,7 @@ final class DefaultAnalyzerBuilder private[lucene] (config: Config)
     extends AnalyzerBuilder(config) { self =>
   type Builder = DefaultAnalyzerBuilder
 
-  lazy val defaultStopWords: Set[String] = Set.empty
+  val defaultStopWords: Set[String] = Set.empty
 
   def withConfig(newConfig: Config): DefaultAnalyzerBuilder =
     new DefaultAnalyzerBuilder(newConfig)
