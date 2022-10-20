@@ -20,12 +20,15 @@ import scala.jdk.CollectionConverters._
 
 import cats.effect.kernel.{Resource, Sync}
 import org.apache.lucene.analysis.Analyzer.TokenStreamComponents
+import org.apache.lucene.analysis.snowball.SnowballFilter
 import org.apache.lucene.analysis.standard.StandardTokenizer
 import org.apache.lucene.analysis.en.PorterStemFilter
 import org.apache.lucene.analysis.es.SpanishLightStemFilter
 import org.apache.lucene.analysis.fr.FrenchLightStemFilter
 import org.apache.lucene.analysis.it.ItalianLightStemFilter
 import org.apache.lucene.analysis.de.GermanLightStemFilter
+import org.apache.lucene.analysis.pt.PortugueseLightStemFilter
+import org.apache.lucene.analysis.br.BrazilianStemFilter
 import org.apache.lucene.analysis.LowerCaseFilter
 import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter
@@ -37,6 +40,11 @@ import org.apache.lucene.analysis.fr.FrenchAnalyzer.{getDefaultStopSet => getFre
 import org.apache.lucene.analysis.es.SpanishAnalyzer.{getDefaultStopSet => getSpanishStopSet}
 import org.apache.lucene.analysis.it.ItalianAnalyzer.{getDefaultStopSet => getItalianStopSet}
 import org.apache.lucene.analysis.de.GermanAnalyzer.{getDefaultStopSet => getGermanStopSet}
+import org.apache.lucene.analysis.nl.DutchAnalyzer.{getDefaultStopSet => getDutchStopSet}
+import org.apache.lucene.analysis.pt.PortugueseAnalyzer.{getDefaultStopSet => getPortugueseStopSet}
+import org.apache.lucene.analysis.br.BrazilianAnalyzer.{
+  getDefaultStopSet => getBrazilianPortugueseStopSet
+}
 
 final case class Config(
     lowerCase: Boolean,
@@ -122,6 +130,12 @@ object AnalyzerBuilder {
     new FrenchAnalyzerBuilder(Config.empty, false)
   def german: GermanAnalyzerBuilder =
     new GermanAnalyzerBuilder(Config.empty, false)
+  def dutch: DutchAnalyzerBuilder =
+    new DutchAnalyzerBuilder(Config.empty, false)
+  def brazilianPortuguese: BrazilianPortugueseAnalyzerBuilder =
+    new BrazilianPortugueseAnalyzerBuilder(Config.empty, false)
+  def portuguese: PortugueseAnalyzerBuilder =
+    new PortugueseAnalyzerBuilder(Config.empty, false)
   def italian: ItalianAnalyzerBuilder =
     new ItalianAnalyzerBuilder(Config.empty, false)
   def spanish: SpanishAnalyzerBuilder =
@@ -142,6 +156,21 @@ final class DefaultAnalyzerBuilder private[lucene] (config: Config)
 
   def french: FrenchAnalyzerBuilder =
     new FrenchAnalyzerBuilder(config, false)
+
+  def german: GermanAnalyzerBuilder =
+    new GermanAnalyzerBuilder(config, false)
+
+  def dutch: DutchAnalyzerBuilder =
+    new DutchAnalyzerBuilder(config, false)
+
+  def brazilianPortuguese: BrazilianPortugueseAnalyzerBuilder =
+    new BrazilianPortugueseAnalyzerBuilder(config, false)
+
+  def portuguese: PortugueseAnalyzerBuilder =
+    new PortugueseAnalyzerBuilder(config, false)
+
+  def italian: ItalianAnalyzerBuilder =
+    new ItalianAnalyzerBuilder(config, false)
 
   def spanish: SpanishAnalyzerBuilder =
     new SpanishAnalyzerBuilder(config, false)
@@ -174,7 +203,7 @@ final class EnglishAnalyzerBuilder private[lucene] (
 
   /** Adds the Porter Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene PorterStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withPorterStemmer: EnglishAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -211,7 +240,7 @@ final class FrenchAnalyzerBuilder private[lucene] (
 
   /** Adds the FrenchLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene FrenchLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withFrenchLightStemmer: FrenchAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -247,7 +276,7 @@ final class SpanishAnalyzerBuilder private[lucene] (
 
   /** Adds the SpanishLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene SpanishLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withSpanishLightStemmer: SpanishAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -283,7 +312,7 @@ final class ItalianAnalyzerBuilder private[lucene] (
 
   /** Adds the ItalianLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene ItalianLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withItalianLightStemmer: ItalianAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -319,7 +348,7 @@ final class GermanAnalyzerBuilder private[lucene] (
 
   /** Adds the GermanLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene GermanLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withGermanLightStemmer: GermanAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -328,5 +357,120 @@ final class GermanAnalyzerBuilder private[lucene] (
     mkFromStandardTokenizer(config) { ts =>
       val tokens = if (self.config.defaultStopWords) new StopFilter(ts, getGermanStopSet()) else ts
       if (self.stemmer) new GermanLightStemFilter(tokens) else tokens
+    }
+}
+
+final class DutchAnalyzerBuilder private[lucene] (
+    config: Config,
+    stemmer: Boolean,
+) extends AnalyzerBuilder(config) { self =>
+  type Builder = DutchAnalyzerBuilder
+
+  private def copy(
+      newConfig: Config,
+      stemmer: Boolean = self.stemmer,
+  ): DutchAnalyzerBuilder =
+    new DutchAnalyzerBuilder(newConfig, stemmer)
+
+  def withConfig(newConfig: Config): DutchAnalyzerBuilder =
+    copy(newConfig = newConfig)
+
+  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
+    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
+    * build the default StopFilter
+    */
+  lazy val defaultStopWords: Set[String] =
+    getDutchStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+
+  /** Adds the Dutch Snowball Stemmer to the end of the analyzer pipeline and enables lowercasing.
+    * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
+    */
+  def withDutchStemmer: DutchAnalyzerBuilder =
+    copy(config.copy(lowerCase = true), stemmer = true)
+
+  def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
+    mkFromStandardTokenizer(config) { ts =>
+      val tokens = if (self.config.defaultStopWords) new StopFilter(ts, getDutchStopSet()) else ts
+      if (self.stemmer) {
+        new SnowballFilter(ts, new org.tartarus.snowball.ext.DutchStemmer())
+      } else tokens
+    }
+}
+
+final class PortugueseAnalyzerBuilder private[lucene] (
+    config: Config,
+    stemmer: Boolean,
+) extends AnalyzerBuilder(config) { self =>
+  type Builder = PortugueseAnalyzerBuilder
+
+  private def copy(
+      newConfig: Config,
+      stemmer: Boolean = self.stemmer,
+  ): PortugueseAnalyzerBuilder =
+    new PortugueseAnalyzerBuilder(newConfig, stemmer)
+
+  def withConfig(newConfig: Config): PortugueseAnalyzerBuilder =
+    copy(newConfig = newConfig)
+
+  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
+    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
+    * build the default StopFilter
+    */
+  lazy val defaultStopWords: Set[String] =
+    getPortugueseStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+
+  /** Adds the PortugueseLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
+    * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
+    */
+  def withPortugueseLightStemmer: PortugueseAnalyzerBuilder =
+    copy(config.copy(lowerCase = true), stemmer = true)
+
+  def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
+    mkFromStandardTokenizer(config) { ts =>
+      val tokens =
+        if (self.config.defaultStopWords) new StopFilter(ts, getPortugueseStopSet()) else ts
+      if (self.stemmer) new PortugueseLightStemFilter(tokens) else tokens
+    }
+}
+
+final class BrazilianPortugueseAnalyzerBuilder private[lucene] (
+    config: Config,
+    stemmer: Boolean,
+) extends AnalyzerBuilder(config) { self =>
+  type Builder = BrazilianPortugueseAnalyzerBuilder
+
+  private def copy(
+      newConfig: Config,
+      stemmer: Boolean = self.stemmer,
+  ): BrazilianPortugueseAnalyzerBuilder =
+    new BrazilianPortugueseAnalyzerBuilder(newConfig, stemmer)
+
+  def withConfig(newConfig: Config): BrazilianPortugueseAnalyzerBuilder =
+    copy(newConfig = newConfig)
+
+  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
+    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
+    * build the default StopFilter
+    */
+  lazy val defaultStopWords: Set[String] =
+    getBrazilianPortugueseStopSet().asScala
+      .map(ca => String.valueOf(ca.asInstanceOf[Array[Char]]))
+      .toSet
+
+  /** Adds the Brazilian Stemmer to the end of the analyzer pipeline and enables lowercasing.
+    * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
+    */
+  def withBrazilianStemmer: BrazilianPortugueseAnalyzerBuilder =
+    copy(config.copy(lowerCase = true), stemmer = true)
+
+  def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer] =
+    mkFromStandardTokenizer(config) { ts =>
+      val tokens =
+        if (self.config.defaultStopWords) new StopFilter(ts, getBrazilianPortugueseStopSet())
+        else ts
+      if (self.stemmer) new BrazilianStemFilter(tokens) else tokens
     }
 }
