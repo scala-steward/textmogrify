@@ -96,8 +96,7 @@ sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
   /** Build the Analyzer wrapped inside a Resource. */
   def build[F[_]](implicit F: Sync[F]): Resource[F, Analyzer]
 
-  /** Directly construct a tokenizing function
-    */
+  /** Build a tokenizing function that uses the Analyzer and collects tokens in a vector */
   def tokenizer[F[_]](implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
     Tokenizer.vectorTokenizer(build)
 
