@@ -157,6 +157,21 @@ final class DefaultAnalyzerBuilder private[lucene] (config: Config)
   def french: FrenchAnalyzerBuilder =
     new FrenchAnalyzerBuilder(config, false)
 
+  def german: GermanAnalyzerBuilder =
+    new GermanAnalyzerBuilder(config, false)
+
+  def dutch: DutchAnalyzerBuilder =
+    new DutchAnalyzerBuilder(config, false)
+
+  def brazilianPortuguese: BrazilianPortugueseAnalyzerBuilder =
+    new BrazilianPortugueseAnalyzerBuilder(config, false)
+
+  def portuguese: PortugueseAnalyzerBuilder =
+    new PortugueseAnalyzerBuilder(config, false)
+
+  def italian: ItalianAnalyzerBuilder =
+    new ItalianAnalyzerBuilder(config, false)
+
   def spanish: SpanishAnalyzerBuilder =
     new SpanishAnalyzerBuilder(config, false)
 
