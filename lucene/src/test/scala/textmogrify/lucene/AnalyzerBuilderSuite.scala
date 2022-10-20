@@ -317,6 +317,59 @@ class GermanAnalyzerBuilderSuite extends CatsEffectSuite {
 
 }
 
+class DutchAnalyzerBuilderSuite extends CatsEffectSuite {
+
+  val jalapenos = "Ik hou van Jalapeños"
+  val jumping = "Neeko springt graag op balies"
+
+  test("dutch analyzer default should tokenize without any transformations") {
+    val analyzer = AnalyzerBuilder.dutch
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Ik", "hou", "van", "Jalapeños"))
+  }
+
+  test("dutch analyzer withLowerCasing should lowercase all letters") {
+    val analyzer = AnalyzerBuilder.dutch.withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("ik", "hou", "van", "jalapeños"))
+  }
+
+  test("dutch analyzer withASCIIFolding should fold 'ñ' to 'n'") {
+    val analyzer = AnalyzerBuilder.dutch.withASCIIFolding
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Ik", "hou", "van", "Jalapenos"))
+  }
+
+  test("dutch analyzer withCustomStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.dutch.withCustomStopWords(Set("Ik"))
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("hou", "van", "Jalapeños"))
+  }
+
+  test("dutch analyzer withDefaultStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.dutch.withDefaultStopWords
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("Neeko", "springt", "graag", "balies"))
+  }
+
+  test("dutch analyzer withDutchLightStemmer should lowercase and stem words") {
+    val analyzer = AnalyzerBuilder.dutch.withDutchStemmer
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("neeko", "springt", "grag", "op", "balies"))
+  }
+
+  test("dutch analyzer builder settings can be chained") {
+    val analyzer = AnalyzerBuilder.dutch.withDutchStemmer
+      .withCustomStopWords(Set("Neeko"))
+      .withDefaultStopWords
+      .withASCIIFolding
+      .withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("springt", "grag", "op", "balies"))
+  }
+
+}
+
 class PortugueseAnalyzerBuilderSuite extends CatsEffectSuite {
 
   val jalapenos = "Eu gosto de jalapeños"
