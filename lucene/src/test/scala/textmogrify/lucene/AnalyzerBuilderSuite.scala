@@ -316,3 +316,109 @@ class GermanAnalyzerBuilderSuite extends CatsEffectSuite {
   }
 
 }
+
+class PortugueseAnalyzerBuilderSuite extends CatsEffectSuite {
+
+  val jalapenos = "Eu gosto de jalapeños"
+  val jumping = "Neeko gosta de saltar em balcões"
+
+  test("portuguese analyzer default should tokenize without any transformations") {
+    val analyzer = AnalyzerBuilder.portuguese
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Eu", "gosto", "de", "jalapeños"))
+  }
+
+  test("portuguese analyzer withLowerCasing should lowercase all letters") {
+    val analyzer = AnalyzerBuilder.portuguese.withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("eu", "gosto", "de", "jalapeños"))
+  }
+
+  test("portuguese analyzer withASCIIFolding should fold 'ñ' to 'n'") {
+    val analyzer = AnalyzerBuilder.portuguese.withASCIIFolding
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Eu", "gosto", "de", "jalapenos"))
+  }
+
+  test("portuguese analyzer withCustomStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.portuguese.withCustomStopWords(Set("eu", "de"))
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("gosto", "jalapeños"))
+  }
+
+  test("portuguese analyzer withDefaultStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.portuguese.withDefaultStopWords
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("Neeko", "gosta", "saltar", "balcões"))
+  }
+
+  test("portuguese analyzer withPortugueseLightStemmer should lowercase and stem words") {
+    val analyzer = AnalyzerBuilder.portuguese.withPortugueseLightStemmer
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("neek", "gost", "de", "saltar", "em", "balca"))
+  }
+
+  test("portuguese analyzer builder settings can be chained") {
+    val analyzer = AnalyzerBuilder.portuguese.withPortugueseLightStemmer
+      .withCustomStopWords(Set("Neeko"))
+      .withDefaultStopWords
+      .withASCIIFolding
+      .withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("gost", "saltar", "balco"))
+  }
+
+}
+
+class BrazilianPortugueseAnalyzerBuilderSuite extends CatsEffectSuite {
+
+  val jalapenos = "Eu gosto de jalapeños"
+  val jumping = "Neeko gosta de pular em balcões"
+
+  test("brazilianPortuguese analyzer default should tokenize without any transformations") {
+    val analyzer = AnalyzerBuilder.brazilianPortuguese
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Eu", "gosto", "de", "jalapeños"))
+  }
+
+  test("brazilianPortuguese analyzer withLowerCasing should lowercase all letters") {
+    val analyzer = AnalyzerBuilder.brazilianPortuguese.withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("eu", "gosto", "de", "jalapeños"))
+  }
+
+  test("brazilianPortuguese analyzer withASCIIFolding should fold 'ñ' to 'n'") {
+    val analyzer = AnalyzerBuilder.brazilianPortuguese.withASCIIFolding
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("Eu", "gosto", "de", "jalapenos"))
+  }
+
+  test("brazilianPortuguese analyzer withCustomStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.brazilianPortuguese.withCustomStopWords(Set("eu", "de"))
+    val actual = analyzer.tokenizer[IO].use(f => f(jalapenos))
+    assertIO(actual, Vector("gosto", "jalapeños"))
+  }
+
+  test("brazilianPortuguese analyzer withDefaultStopWords should filter them out") {
+    val analyzer = AnalyzerBuilder.brazilianPortuguese.withDefaultStopWords
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("Neeko", "gosta", "pular", "balcões"))
+  }
+
+  test("brazilianPortuguese analyzer withPortugueseLightStemmer should lowercase and stem words") {
+    val analyzer = AnalyzerBuilder.brazilianPortuguese.withBrazilianStemmer
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("neek", "gost", "de", "pul", "em", "balco"))
+  }
+
+  test("brazilianPortuguese analyzer builder settings can be chained") {
+    val analyzer = AnalyzerBuilder.brazilianPortuguese.withBrazilianStemmer
+      .withCustomStopWords(Set("Neeko"))
+      .withDefaultStopWords
+      .withASCIIFolding
+      .withLowerCasing
+    val actual = analyzer.tokenizer[IO].use(f => f(jumping))
+    assertIO(actual, Vector("gost", "pul", "balco"))
+  }
+
+}
