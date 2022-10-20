@@ -24,16 +24,18 @@ import org.apache.lucene.analysis.en.EnglishAnalyzer
 class AnalyzerResourceSuite extends CatsEffectSuite {
 
   test("tokenizer should work") {
-    val analyzer = AnalyzerResource.tokenizer[IO](new EnglishAnalyzer())
-    val actual = analyzer.use { f =>
+    val analyzer = AnalyzerResource.fromAnalyzer[IO](new EnglishAnalyzer())
+    val tokenizer = Tokenizer.vectorTokenizer(analyzer)
+    val actual = tokenizer.use { f =>
       f("Hello my name is Neeko")
     }
     assertIO(actual, Vector("hello", "my", "name", "neeko"))
   }
 
   test("tokenizer should yield a func that can be used multiple times") {
-    val analyzer = AnalyzerResource.tokenizer[IO](new EnglishAnalyzer())
-    val actual = analyzer.use { f =>
+    val analyzer = AnalyzerResource.fromAnalyzer[IO](new EnglishAnalyzer())
+    val tokenizer = Tokenizer.vectorTokenizer(analyzer)
+    val actual = tokenizer.use { f =>
       for {
         v1 <- f("Hello my name is Neeko")
         v2 <- f("I enjoy jumping on counters")
@@ -50,14 +52,15 @@ class AnalyzerResourceSuite extends CatsEffectSuite {
     import org.apache.lucene.analysis.LowerCaseFilter
     import org.apache.lucene.analysis.Analyzer
 
-    val stemmer = AnalyzerResource.tokenizer[IO](new Analyzer {
+    val analyzer = AnalyzerResource.fromAnalyzer[IO](new Analyzer {
       protected def createComponents(fieldName: String): TokenStreamComponents = {
         val source = new StandardTokenizer()
         val tokens = new LowerCaseFilter(source)
         new TokenStreamComponents(source, new PorterStemFilter(tokens))
       }
     })
-    val actual = stemmer.use { f =>
+    val tokenizer = Tokenizer.vectorTokenizer(analyzer)
+    val actual = tokenizer.use { f =>
       for {
         v1 <- f("Hello my name is Neeko")
         v2 <- f("I enjoy jumping on counters")

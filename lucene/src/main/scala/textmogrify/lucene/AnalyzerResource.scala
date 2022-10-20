@@ -26,12 +26,4 @@ object AnalyzerResource {
     */
   def fromAnalyzer[F[_]](analyzer: => Analyzer)(implicit F: Sync[F]): Resource[F, Analyzer] =
     Resource.make(F.delay(analyzer))(analyzer => F.delay(analyzer.close()))
-
-  /** Construct a tokenizing function directly from an Analyzer
-    */
-  def tokenizer[F[_]](
-      analyzer: => Analyzer
-  )(implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
-    fromAnalyzer(analyzer)
-      .map(a => Tokenizer.vectorTokenizer(a))
 }
