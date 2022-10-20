@@ -72,7 +72,15 @@ object Config {
 sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
   type Builder <: AnalyzerBuilder
 
+  private[lucene] def toSet(cs: CharArraySet): Set[String] =
+    cs.asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+
+  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
+    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
+    * build the default StopFilter
+    */
   def defaultStopWords: Set[String]
+
   def withConfig(config: Config): Builder
 
   /** Adds a lowercasing stage to the analyzer pipeline */
@@ -194,12 +202,7 @@ final class EnglishAnalyzerBuilder private[lucene] (
   def withConfig(newConfig: Config): EnglishAnalyzerBuilder =
     copy(newConfig = newConfig)
 
-  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
-    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
-    * build the default StopFilter
-    */
-  lazy val defaultStopWords: Set[String] =
-    getEnglishStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+  lazy val defaultStopWords: Set[String] = toSet(getEnglishStopSet())
 
   /** Adds the Porter Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -231,12 +234,7 @@ final class FrenchAnalyzerBuilder private[lucene] (
   def withConfig(newConfig: Config): FrenchAnalyzerBuilder =
     copy(newConfig = newConfig)
 
-  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
-    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
-    * build the default StopFilter
-    */
-  lazy val defaultStopWords: Set[String] =
-    getFrenchStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+  lazy val defaultStopWords: Set[String] = toSet(getFrenchStopSet())
 
   /** Adds the FrenchLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -267,12 +265,7 @@ final class SpanishAnalyzerBuilder private[lucene] (
   def withConfig(newConfig: Config): SpanishAnalyzerBuilder =
     copy(newConfig = newConfig)
 
-  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
-    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
-    * build the default StopFilter
-    */
-  lazy val defaultStopWords: Set[String] =
-    getSpanishStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+  lazy val defaultStopWords: Set[String] = toSet(getSpanishStopSet())
 
   /** Adds the SpanishLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -303,12 +296,7 @@ final class ItalianAnalyzerBuilder private[lucene] (
   def withConfig(newConfig: Config): ItalianAnalyzerBuilder =
     copy(newConfig = newConfig)
 
-  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
-    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
-    * build the default StopFilter
-    */
-  lazy val defaultStopWords: Set[String] =
-    getItalianStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+  lazy val defaultStopWords: Set[String] = toSet(getItalianStopSet())
 
   /** Adds the ItalianLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -339,12 +327,7 @@ final class GermanAnalyzerBuilder private[lucene] (
   def withConfig(newConfig: Config): GermanAnalyzerBuilder =
     copy(newConfig = newConfig)
 
-  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
-    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
-    * build the default StopFilter
-    */
-  lazy val defaultStopWords: Set[String] =
-    getGermanStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+  lazy val defaultStopWords: Set[String] = toSet(getGermanStopSet())
 
   /** Adds the GermanLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -375,12 +358,7 @@ final class DutchAnalyzerBuilder private[lucene] (
   def withConfig(newConfig: Config): DutchAnalyzerBuilder =
     copy(newConfig = newConfig)
 
-  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
-    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
-    * build the default StopFilter
-    */
-  lazy val defaultStopWords: Set[String] =
-    getDutchStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+  lazy val defaultStopWords: Set[String] = toSet(getDutchStopSet())
 
   /** Adds the Dutch Snowball Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -413,12 +391,7 @@ final class PortugueseAnalyzerBuilder private[lucene] (
   def withConfig(newConfig: Config): PortugueseAnalyzerBuilder =
     copy(newConfig = newConfig)
 
-  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
-    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
-    * build the default StopFilter
-    */
-  lazy val defaultStopWords: Set[String] =
-    getPortugueseStopSet().asScala.map(ca => String.valueOf(ca.asInstanceOf[Array[Char]])).toSet
+  lazy val defaultStopWords: Set[String] = toSet(getPortugueseStopSet())
 
   /** Adds the PortugueseLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
@@ -450,14 +423,7 @@ final class BrazilianPortugueseAnalyzerBuilder private[lucene] (
   def withConfig(newConfig: Config): BrazilianPortugueseAnalyzerBuilder =
     copy(newConfig = newConfig)
 
-  /** A convenience value for debugging or investigating, to inspect the Lucene default stop words.
-    * This set is immutable, and unused; it is the underlying Lucene `CharArraySet` that we use to
-    * build the default StopFilter
-    */
-  lazy val defaultStopWords: Set[String] =
-    getBrazilianPortugueseStopSet().asScala
-      .map(ca => String.valueOf(ca.asInstanceOf[Array[Char]]))
-      .toSet
+  lazy val defaultStopWords: Set[String] = toSet(getBrazilianPortugueseStopSet())
 
   /** Adds the Brazilian Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
