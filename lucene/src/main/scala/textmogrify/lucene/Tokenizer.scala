@@ -16,6 +16,7 @@
 
 package textmogrify.lucene
 
+import cats.effect.Resource
 import cats.effect.kernel.Sync
 import scala.collection.mutable.ArrayBuffer
 import java.io.StringReader
@@ -27,8 +28,10 @@ object Tokenizer {
   /** Build a tokenizing function that runs its input through the Analyzer and collects
     * all tokens into a `Vector`
     */
-  def vectorTokenizer[F[_]](analyzer: Analyzer)(implicit F: Sync[F]): String => F[Vector[String]] =
-    (s: String) =>
+  def vectorTokenizer[F[_]](
+      analyzer: Resource[F, Analyzer]
+  )(implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
+    analyzer.map { analyzer => (s: String) =>
       F.delay {
         val ts = analyzer.tokenStream("textmogrify-field", new StringReader(s))
         val termAtt = ts.addAttribute(classOf[CharTermAttribute])
@@ -42,4 +45,5 @@ object Tokenizer {
           ts.close()
         arr.toVector
       }
+    }
 }

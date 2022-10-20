@@ -99,7 +99,7 @@ sealed abstract class AnalyzerBuilder private[lucene] (config: Config) {
   /** Directly construct a tokenizing function
     */
   def tokenizer[F[_]](implicit F: Sync[F]): Resource[F, String => F[Vector[String]]] =
-    build.map(a => Tokenizer.vectorTokenizer(a))
+    Tokenizer.vectorTokenizer(build)
 
   private[lucene] def mkFromStandardTokenizer[F[_]](
       config: Config
