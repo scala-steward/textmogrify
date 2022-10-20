@@ -188,7 +188,7 @@ final class EnglishAnalyzerBuilder private[lucene] (
 
   /** Adds the Porter Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene PorterStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withPorterStemmer: EnglishAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -225,7 +225,7 @@ final class FrenchAnalyzerBuilder private[lucene] (
 
   /** Adds the FrenchLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene FrenchLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withFrenchLightStemmer: FrenchAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -261,7 +261,7 @@ final class SpanishAnalyzerBuilder private[lucene] (
 
   /** Adds the SpanishLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene SpanishLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withSpanishLightStemmer: SpanishAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -297,7 +297,7 @@ final class ItalianAnalyzerBuilder private[lucene] (
 
   /** Adds the ItalianLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene ItalianLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withItalianLightStemmer: ItalianAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -333,7 +333,7 @@ final class GermanAnalyzerBuilder private[lucene] (
 
   /** Adds the GermanLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene GermanLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withGermanLightStemmer: GermanAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -369,7 +369,7 @@ final class DutchAnalyzerBuilder private[lucene] (
 
   /** Adds the Dutch Snowball Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene Dutch Stemmer.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withDutchStemmer: DutchAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -407,7 +407,7 @@ final class PortugueseAnalyzerBuilder private[lucene] (
 
   /** Adds the PortugueseLight Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene PortugueseLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withPortugueseLightStemmer: PortugueseAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
@@ -446,7 +446,7 @@ final class BrazilianPortugueseAnalyzerBuilder private[lucene] (
 
   /** Adds the Brazilian Stemmer to the end of the analyzer pipeline and enables lowercasing.
     * Stemming reduces words like `jumping` and `jumps` to their root word `jump`.
-    * NOTE: Lowercasing is forced as it is required for the Lucene BrazilianPortugueseLightStemFilter.
+    * NOTE: Lowercasing is forced as it is required by most Lucene stemmers.
     */
   def withBrazilianStemmer: BrazilianPortugueseAnalyzerBuilder =
     copy(config.copy(lowerCase = true), stemmer = true)
