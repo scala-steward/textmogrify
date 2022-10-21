@@ -56,22 +56,32 @@ lazy val example = project
   .dependsOn(lucene)
 
 import laika.ast.Path.Root
-import laika.helium.config.{IconLink, HeliumIcon}
+import laika.helium.config.{IconLink, HeliumIcon, TextLink, ThemeNavigationSection}
+import cats.data.NonEmptyList
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(lucene)
   .settings(
     tlSiteApiPackage := Some("textmogrify"),
-    tlSiteRelatedProjects := Seq(
-      "lucene" -> url("https://lucene.apache.org/"),
-      TypelevelProject.CatsEffect,
-      TypelevelProject.Fs2,
-    ),
     tlSiteHelium := {
-      tlSiteHelium.value.site.darkMode.disabled.site.topNavigationBar(
-        homeLink = IconLink.external("https://github.com/valencik/textmogrify", HeliumIcon.home)
-      )
+      tlSiteHelium.value.site.darkMode.disabled.site
+        .topNavigationBar(
+          homeLink = IconLink.external("https://github.com/valencik/textmogrify", HeliumIcon.home)
+        )
+        .site
+        .mainNavigation(
+          appendLinks = Seq(
+            ThemeNavigationSection(
+              "Related Projects",
+              NonEmptyList.of(
+                TextLink.external("https://lucene.apache.org/", "lucene"),
+                TextLink.external("https://typelevel.org/cats-effect/", "cats-effect"),
+                TextLink.external("https://fs2.io/", "fs2"),
+              ),
+            )
+          )
+        )
     },
   )
 
