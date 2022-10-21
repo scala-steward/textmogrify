@@ -22,7 +22,7 @@ ThisBuild / tlCiReleaseBranches := Seq("main")
 // use JDK 11
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
 
-val Scala213 = "2.13.8"
+val Scala213 = "2.13.10"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.2.0")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
@@ -55,17 +55,34 @@ lazy val example = project
   .enablePlugins(NoPublishPlugin)
   .dependsOn(lucene)
 
+import laika.ast.Path.Root
+import laika.helium.config.{IconLink, HeliumIcon, TextLink, ThemeNavigationSection}
+import cats.data.NonEmptyList
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
   .dependsOn(lucene)
   .settings(
     tlSiteApiPackage := Some("textmogrify"),
-    tlSiteRelatedProjects := Seq(
-      "lucene" -> url("https://lucene.apache.org/"),
-      TypelevelProject.CatsEffect,
-      TypelevelProject.Fs2,
-    ),
+    tlSiteHelium := {
+      tlSiteHelium.value.site.darkMode.disabled.site
+        .topNavigationBar(
+          homeLink = IconLink.external("https://github.com/valencik/textmogrify", HeliumIcon.home)
+        )
+        .site
+        .mainNavigation(
+          appendLinks = Seq(
+            ThemeNavigationSection(
+              "Related Projects",
+              NonEmptyList.of(
+                TextLink.external("https://lucene.apache.org/", "lucene"),
+                TextLink.external("https://typelevel.org/cats-effect/", "cats-effect"),
+                TextLink.external("https://fs2.io/", "fs2"),
+              ),
+            )
+          )
+        )
+    },
   )
 
 lazy val unidocs = project
