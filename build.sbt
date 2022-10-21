@@ -66,6 +66,9 @@ lazy val docs = project
       TypelevelProject.CatsEffect,
       TypelevelProject.Fs2,
     ),
+    tlSiteHelium := {
+      tlSiteHelium.value.site.darkMode.disabled
+    },
   )
 
 lazy val unidocs = project
