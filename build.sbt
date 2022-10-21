@@ -55,6 +55,8 @@ lazy val example = project
   .enablePlugins(NoPublishPlugin)
   .dependsOn(lucene)
 
+import laika.ast.Path.Root
+import laika.helium.config.{IconLink, HeliumIcon}
 lazy val docs = project
   .in(file("site"))
   .enablePlugins(TypelevelSitePlugin)
@@ -67,7 +69,9 @@ lazy val docs = project
       TypelevelProject.Fs2,
     ),
     tlSiteHelium := {
-      tlSiteHelium.value.site.darkMode.disabled
+      tlSiteHelium.value.site.darkMode.disabled.site.topNavigationBar(
+        homeLink = IconLink.external("https://github.com/valencik/textmogrify", HeliumIcon.home)
+      )
     },
   )
 
