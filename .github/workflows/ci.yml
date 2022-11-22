@@ -58,7 +58,7 @@ jobs:
           cache: sbt
 
       - name: sbt update
-        if: matrix.java == 'temurin@11' && !steps.setup-java-temurin-11.outputs.cache-hit
+        if: matrix.java == 'temurin@11' && steps.setup-java-temurin-11.outputs.cache-hit == 'false'
         run: sbt 'project ${{ matrix.project }}' '++ ${{ matrix.scala }}' reload +update
 
       - name: Check that workflows are up to date
@@ -129,7 +129,7 @@ jobs:
           cache: sbt
 
       - name: sbt update
-        if: matrix.java == 'temurin@11' && !steps.setup-java-temurin-11.outputs.cache-hit
+        if: matrix.java == 'temurin@11' && steps.setup-java-temurin-11.outputs.cache-hit == 'false'
         run: sbt '++ ${{ matrix.scala }}' reload +update
 
       - name: Download target directories (2.13, rootJVM)
@@ -210,7 +210,7 @@ jobs:
           cache: sbt
 
       - name: sbt update
-        if: matrix.java == 'temurin@11' && !steps.setup-java-temurin-11.outputs.cache-hit
+        if: matrix.java == 'temurin@11' && steps.setup-java-temurin-11.outputs.cache-hit == 'false'
         run: sbt '++ ${{ matrix.scala }}' reload +update
 
       - name: Submit Dependencies
@@ -249,7 +249,7 @@ jobs:
           cache: sbt
 
       - name: sbt update
-        if: matrix.java == 'temurin@11' && !steps.setup-java-temurin-11.outputs.cache-hit
+        if: matrix.java == 'temurin@11' && steps.setup-java-temurin-11.outputs.cache-hit == 'false'
         run: sbt '++ ${{ matrix.scala }}' reload +update
 
       - name: Generate site
