@@ -28,7 +28,7 @@ ThisBuild / scalaVersion := Scala213 // the default Scala
 
 val catsV = "2.9.0"
 val catsEffectV = "3.4.10"
-val fs2V = "3.6.1"
+val fs2V = "3.7.0"
 val luceneV = "9.5.0"
 val munitV = "1.0.0-M6"
 val munitCatsEffectV = "2.0.0-M3"
