@@ -22,7 +22,7 @@ ThisBuild / tlCiReleaseBranches := Seq("main")
 // use JDK 11
 ThisBuild / githubWorkflowJavaVersions := Seq(JavaSpec.temurin("11"))
 
-val Scala213 = "2.13.10"
+val Scala213 = "2.13.11"
 ThisBuild / crossScalaVersions := Seq(Scala213, "3.3.0")
 ThisBuild / scalaVersion := Scala213 // the default Scala
 
