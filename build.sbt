@@ -41,6 +41,7 @@ lazy val lucene = project
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % catsV,
       "org.typelevel" %% "cats-effect" % catsEffectV,
+      "org.typelevel" %% "cats-effect-kernel" % catsEffectV,
       "co.fs2" %% "fs2-core" % fs2V,
       "co.fs2" %% "fs2-io" % fs2V,
       "org.apache.lucene" % "lucene-core" % luceneV,
