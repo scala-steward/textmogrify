@@ -30,7 +30,6 @@ val catsV = "2.9.0"
 val catsEffectV = "3.5.1"
 val fs2V = "3.7.0"
 val luceneV = "9.7.0"
-val munitV = "1.0.0-M6"
 val munitCatsEffectV = "2.0.0-M3"
 
 lazy val root = tlCrossRootProject.aggregate(lucene, example, unidocs, benchmarks)
@@ -42,6 +41,7 @@ lazy val lucene = project
     libraryDependencies ++= Seq(
       "org.typelevel" %% "cats-core" % catsV,
       "org.typelevel" %% "cats-effect" % catsEffectV,
+      "org.typelevel" %% "cats-effect-kernel" % catsEffectV,
       "co.fs2" %% "fs2-core" % fs2V,
       "co.fs2" %% "fs2-io" % fs2V,
       "org.apache.lucene" % "lucene-core" % luceneV,
