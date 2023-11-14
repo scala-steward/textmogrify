@@ -30,7 +30,7 @@ val catsV = "2.10.0"
 val catsEffectV = "3.5.2"
 val fs2V = "3.9.3"
 val luceneV = "9.8.0"
-val munitCatsEffectV = "2.0.0-M3"
+val munitCatsEffectV = "2.0.0-M4"
 
 lazy val root = tlCrossRootProject.aggregate(lucene, example, unidocs, benchmarks)
 
