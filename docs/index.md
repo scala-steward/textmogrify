@@ -10,7 +10,7 @@ To use the latest version, include the following in your `build.sbt`:
 
 ```scala
 libraryDependencies ++= Seq(
-  "io.pig" %% "textmogrify" % "@VERSION@"
+  "pink.cozydev" %% "textmogrify" % "@VERSION@"
 )
 ```
 
@@ -20,7 +20,7 @@ Currently the core functionality of textmogrify is implemented with [Lucene][luc
 
 ```scala
 libraryDependencies ++= Seq(
-  "io.pig" %% "textmogrify-lucene" % "@VERSION@"
+  "pink.cozydev" %% "textmogrify-lucene" % "@VERSION@"
 )
 ```
 
